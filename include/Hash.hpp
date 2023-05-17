@@ -15,22 +15,22 @@ struct Hash
     std::uint8_t data[N / 8];
 
     Hash() : data{} {}
-    Hash(const Hash&) = default
-    Hash(Hash&&) = default
-    Hash& operator=(const Hash&) = default
-    Hash& operator(Hash&&) = default
+    Hash(const Hash&) = default;
+    Hash(Hash&&) = default;
+    Hash& operator=(const Hash&) = default;
+    Hash& operator=(Hash&&) = default;
     ~Hash() = default;
 
     template<typename T>
     Hash(T* buffer) : data{}
     {
-        std::memcpy(data, buffer, N);
+        std::memcpy(data, buffer, Bytes);
     }
 
     template<typename T>
     void set(T* buffer)
     {
-        std::memcpy(data, buffer, N);
+        std::memcpy(data, buffer, Bytes);
     }
 };
 
@@ -38,10 +38,10 @@ template<std::size_t N>
 std::ostream& operator<<(std::ostream& out, const Hash<N>& hash)
 {
     auto flags = out.flags();
-    out << std::hex << std::setw(2) << std::setfill('0');
-    for (std::size_t i = 0; i < N / 8; ++i)
+    out << std::hex << std::setfill('0');
+    for (std::size_t i = 0; i < Hash<N>::Bytes; ++i)
     {
-        out << hash.data[i];
+        out << std::setw(2) << static_cast<int>(hash.data[i]);
     }
     out.flags(flags);
     return out;

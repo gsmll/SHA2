@@ -6,7 +6,7 @@ int main()
 {
     Hash<256> hash;
     srand(time(NULL));
-    int data[Hash<256>::Bytes / sizeof(decltype(rand()))];
+    int data[64];
 
     for (int k = 0; k < 100; ++k)
     {

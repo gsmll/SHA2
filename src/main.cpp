@@ -24,7 +24,9 @@ int main()
     }
     hash2.set(data);
 
-    std::cout << (hash1 < hash2) << "\n";
-    std::cout << (hash1 > hash2) << "\n";
+    std::cout << hash2 << "\n";
+
+    Hash<32> hash3{ hash2 };
+    std::cout << hash3 << "\n";
 
 }

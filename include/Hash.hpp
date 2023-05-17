@@ -27,6 +27,12 @@ struct Hash
         std::memcpy(data, buffer, Bytes);
     }
 
+    template<std::size_t K, typename EnableT = std::enable_if<(K > N)>>
+    explicit Hash(const Hash<K>& a)
+    {
+        std::memcpy(data, a.data, Bytes);
+    }
+
     template<typename T>
     void set(T* buffer)
     {

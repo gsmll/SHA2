@@ -6,6 +6,10 @@
 
 Began preliminary work with populating the [makefile](./makefile), defining [Utility.hpp](include/Utility.hpp), and implementing the `Hash<N>` object representing an N-bit hash in [Hash.hpp](include/Hash.hpp). 
 
+### 5/18/2023
+
+Completed 
+
 ## GROUP MEMBER 2
 
 ### date x

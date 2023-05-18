@@ -5,8 +5,9 @@
   <p align="center">
     Sha-2 Encryption in a Nutshell
     <br>
-    <a href="https://tryhackme.com/p/GSmall">
+    <a href="https://tryhackme.com/p/Jeffrey.J">
     <img src="https://i.imgur.com/dODfC6z.gif"  alt="GSmall" width=72 height=72>
+    </a>
     <a href="https://tryhackme.com/p/GSmall">
     <img src="https://tryhackme-images.s3.amazonaws.com/user-avatars/c31ea6bfbcc1fa28101976dced850e48.png"  alt="GSmall" width=72 height=72>
     <br>

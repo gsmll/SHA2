@@ -11,7 +11,11 @@
     <a href="https://tryhackme.com/p/GSmall">
     <img src="https://tryhackme-images.s3.amazonaws.com/user-avatars/c31ea6bfbcc1fa28101976dced850e48.png"  alt="GSmall" width=72 height=72>
     <br>
- Jeffrey Jiang | Gabriel Small
+    </a>
+      <a href="https://tryhackme.com/p/Jeffrey.J">
+        Jeffrey Jiang </a>
+        <a href="https://tryhackme.com/p/GSmall">
+          | Gabriel Small</a>
     </a>
   </p>
 </p>

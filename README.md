@@ -24,7 +24,9 @@
 
 <summary > <h1>  Table of Contents </h1> </summary>
 
->- [Project Description](#proj-desc)
+>- [Project Description](#project-description)
+>- [Homework](homework.md)
+>- [Presentation](presentation.md)
 
 </details>
 
@@ -34,3 +36,7 @@
 
 <details>
 <summary>Click to expand</summary>
+For this project we have created multiple sha-2 hashes ranging from 224-512. 
+In class we will give a lesson on sha-2, and challenge them to crack that hash.
+
+</details>  

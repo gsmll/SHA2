@@ -1,32 +1,17 @@
-#include <Hash.hpp>
+#include <bitset>
 
-#include <random>
+#include "Hash.hpp"
+#include "hash/SHA256.hpp"
 
 int main()
 {
-    Hash<256> hash1, hash2;
-    srand(time(NULL));
-    int data[64];
+    std::size_t blk_total;
+    std::uint8_t* res = _details::preprocess_sha256("abc", &blk_total);
 
-    for (std::size_t i = 0; i < std::size(data); ++i)
+    using byte_to_binary = std::bitset<8>;
+    for (std::size_t i = 0; i < blk_total * 512 / 8; ++i)
     {
-        data[i] = rand();
+        std::cout << byte_to_binary{ res[i] } << " ";
     }
-    hash1.set(data);
-
-    hash2 = hash1;
-
-    std::cout << (hash1 == hash2) << "\n";
-    
-    for (std::size_t i = 0; i < std::size(data); ++i)
-    {
-        data[i] = rand();
-    }
-    hash2.set(data);
-
-    std::cout << hash2 << "\n";
-
-    Hash<32> hash3{ hash2 };
-    std::cout << hash3 << "\n";
-
+    std::cout << "\n";
 }

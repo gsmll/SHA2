@@ -6,7 +6,7 @@
 
 namespace _details
 {
-    std::uint8_t* preprocess_sha256(const char* input, std::size_t blks )
+    std::uint8_t* preprocess_sha256(const char* input, std::size_t* blk_total);
 
     Hash<256> general_sha256(const char* input);
 

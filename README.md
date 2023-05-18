@@ -25,8 +25,8 @@
 <summary > <h1>  Table of Contents </h1> </summary>
 
 >- [Project Description](#project-description)
->- [Homework](homework.md)
->- [Presentation](presentation.md)
+>- [Homework](HOMEWORK.md)
+>- [Presentation](PRESENTATION.md)
 
 </details>
 

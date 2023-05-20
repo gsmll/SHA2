@@ -1,5 +1,4 @@
-#include <bitset>
-#include <cassert>
+#include <iostream>
 
 #include "Hash.hpp"
 #include "hash/SHA256.hpp"

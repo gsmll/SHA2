@@ -62,10 +62,11 @@ namespace _details
             // a b c d e f g h
 
             word s1, s2, ch, maj;
-            word temp_hash[8];
-            std::memcpy(temp_hash, hash_data, sizeof(word) * std::size(temp_hash));
+            word hash_buffer[8 + rounds_per_chunk];
+            word* temp_hash = hash_buffer + rounds_per_chunk;
+            std::memcpy(temp_hash, hash_data, 8 * sizeof(word));
 
-            for (std::size_t i = 0; i < rounds_per_chunk; ++i)
+            for (std::size_t i = 0; i < rounds_per_chunk; ++i, --temp_hash)
             {
                 s1 = rotr(temp_hash[4], 6) ^ rotr(temp_hash[4], 11) ^ rotr(temp_hash[4], 25);
                 ch = (temp_hash[4] & temp_hash[5]) ^ (~temp_hash[4] & temp_hash[6]);
@@ -74,12 +75,8 @@ namespace _details
                 maj = (temp_hash[0] & temp_hash[1]) ^ (temp_hash[0] & temp_hash[2]) ^ (temp_hash[1] & temp_hash[2]);
                 temp1_ = s2 + maj;
 
-                for (std::size_t k = 7; k >= 1; --k)
-                {
-                    temp_hash[k] = temp_hash[k - 1];
-                }
-                temp_hash[0] = temp0_ + temp1_;
-                temp_hash[4] += temp0_;
+                temp_hash[-1] = temp0_ + temp1_;
+                temp_hash[3] += temp0_;
 
 #ifdef DEBUG
                 std::cout << "SCHEDULE\n";

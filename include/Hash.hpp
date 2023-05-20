@@ -77,6 +77,42 @@ bool operator>=(Hash<N>& a, Hash<N>& b)
 }
 
 template<std::size_t N>
+bool operator<(Hash<N>&& a, Hash<N>&& b)
+{
+    return std::memcmp(a.data, b.data, Hash<N>::Bytes) < 0;
+}
+
+template<std::size_t N>
+bool operator>(Hash<N>&& a, Hash<N>&& b)
+{
+    return std::memcmp(a.data, b.data, Hash<N>::Bytes) > 0;
+}
+
+template<std::size_t N>
+bool operator==(Hash<N>&& a, Hash<N>&& b)
+{
+    return std::memcmp(a.data, b.data, Hash<N>::Bytes) == 0;
+}
+
+template<std::size_t N>
+bool operator!=(Hash<N>&& a, Hash<N>&& b)
+{
+    return !(a == b);
+}
+
+template<std::size_t N>
+bool operator<=(Hash<N>&& a, Hash<N>&& b)
+{
+    return !(a > b);
+}
+
+template<std::size_t N>
+bool operator>=(Hash<N>&& a, Hash<N>&& b)
+{
+    return !(a < b);
+}
+
+template<std::size_t N>
 std::ostream& operator<<(std::ostream& out, const Hash<N>& hash)
 {
     auto flags = out.flags();
@@ -87,6 +123,47 @@ std::ostream& operator<<(std::ostream& out, const Hash<N>& hash)
     }
     out.flags(flags);
     return out;
+}
+
+namespace _details
+{
+    template<char... C>
+    struct is_valid_hex : public std::false_type {};
+
+    template<char... C>
+    struct is_valid_hex<'0', 'x', C...> : public std::true_type {};
+
+    template<char... C>
+    constexpr inline bool is_valid_hex_v = is_valid_hex<C...>::value;
+
+    template<char... C>
+    using enable_hash_literal_t = std::enable_if_t<(sizeof...(C) > 2) && sizeof...(C) % 2 == 0 && is_valid_hex_v<C...>, Hash<(sizeof...(C) - 2) * 4>>;
+
+    constexpr int hex_char_to_int(char c)
+    {
+        if (c >= 'a' && c <= 'f') return static_cast<int>(c) - static_cast<int>('a') + 10;
+        else if (c >= 'A' && c <= 'F') return static_cast<int>(c) - static_cast<int>('A') + 10;
+        return static_cast<int>(c) - static_cast<int>('0');
+    }
+
+    template<std::size_t N>
+    Hash<(N - 2) * 4> hex_to_hash(const char (&hex)[N])
+    {
+        std::uint8_t data[(N - 2) / 2];
+
+        for (std::size_t i = 1; i < N / 2; ++i)
+        {
+            data[i - 1] = static_cast<std::uint8_t>( 16 * hex_char_to_int(hex[2 * i]) + hex_char_to_int(hex[2 * i + 1]) );
+        }
+
+        return data;
+    }
+}
+
+template<char... C>
+_details::enable_hash_literal_t<C...> operator""_hash()
+{
+    return _details::hex_to_hash({ C... });
 }
 
 #endif

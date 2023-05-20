@@ -14,6 +14,10 @@ Completed implementing `preprocess_sha256` which is used in the SHA256 algorithm
 
 Completed implementing first version of SHA256 in [SHA256.cpp](src/SHA256.cpp).
 
+### 5/20/2023
+
+Implemented SHA224 in [SHA224.cpp](src/SHA224.cpp). Optimized SHA256 and SHA224 by ~10%. Implemented code for profiling code in [ProfileUtil.hpp](include/ProfileUtil.hpp) and an user-defined literal for hashes in [Hash.hpp](include/Hash.hpp) that is useful for testing code.
+
 ## GROUP MEMBER 2
 
 ### date x

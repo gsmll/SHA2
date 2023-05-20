@@ -5,13 +5,16 @@
 
 int main()
 {
-    std::size_t blk_total;
-    std::uint8_t* res = _details::preprocess_sha256("abc", &blk_total);
+    // std::cout << _details::general_sha256("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") << "\n";
 
-    using byte_to_binary = std::bitset<8>;
-    for (std::size_t i = 0; i < blk_total * 512 / 8; ++i)
+    char* buffer = new char[1000001];
+    buffer[1000000] = '\0';
+    for (std::size_t i = 0; i < 1000000; ++i)
     {
-        std::cout << byte_to_binary{ res[i] } << " ";
+        buffer[i] = 'a';
     }
-    std::cout << "\n";
+
+    std::cout << sha256(buffer) << "\n";
+
+    delete[] buffer;
 }

@@ -14,7 +14,7 @@ int main()
         buffer[i] = 'a';
     }
 
-    std::cout << _details::general_sha256(buffer) << "\n";
+    std::cout << sha256(buffer) << "\n";
 
     delete[] buffer;
 }

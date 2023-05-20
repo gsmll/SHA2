@@ -144,3 +144,13 @@ namespace _details
 
 }
 
+[[nodiscard]] Hash<256> sha256(const char* input)
+{
+#ifdef __SHA__
+    return _details::instruction_sha256(input);
+#elif __AVX2__
+    return _details::simd_sha256(input);
+#else
+    return _details::general_sha256(input);
+#endif
+}

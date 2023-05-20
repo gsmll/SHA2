@@ -8,7 +8,11 @@ Began preliminary work with populating the [makefile](./makefile), defining [Uti
 
 ### 5/18/2023
 
-Completed 
+Completed implementing `preprocess_sha256` which is used in the SHA256 algorithm.
+
+### 5/19/2023
+
+Completed implementing first version of SHA256 in [SHA256.cpp](src/SHA256.cpp).
 
 ## GROUP MEMBER 2
 

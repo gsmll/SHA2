@@ -5,15 +5,19 @@
 
 // Architecture specific
 
+#ifdef __OPTIMIZE__
+    #define INLINE inline __attribute__((__always_inline__))
+#else
+    #define INLINE inline
+#endif
+
 #if defined(__x86_64__) || defined(__i386__) // x86 Arch
 
 #ifdef __OPTIMIZE__
     #include <immintrin.h>
-    #define INLINE inline __attribute__((__always_inline__))
 #else
     #define __OPTIMIZE__
     #include <immintrin.h>
-    #define INLINE inline
     #undef __OPTIMIZE__
 #endif
 

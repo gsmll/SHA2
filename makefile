@@ -1,7 +1,7 @@
 CC = g++
 FLAGS = -std=c++17 -Wall -pedantic -O3 -I$(INCLUDE)
 
-OBJECTS=$(BUILD)SHA256.o
+OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o
 
 INCLUDE = include/
 BUILD = build/

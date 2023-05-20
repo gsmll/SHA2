@@ -1,5 +1,6 @@
 CC = g++
 FLAGS = -std=c++17 -Wall -pedantic -O3 -I$(INCLUDE)
+BENCHMARK_FLAGS = -std=c++17 -O3 -I$(INCLUDE) -Llib -lbenchmark -pthread
 
 OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o
 
@@ -16,7 +17,7 @@ profile: $(BUILD)profile
 $(BUILD)main: $(BUILD)  $(OBJECTS) $(BUILD)main.o
 	$(CC) $(FLAGS) $(BUILD)main.o $(OBJECTS) -o $(BUILD)main
 $(BUILD)profile: $(BUILD) $(OBJECTS) $(BUILD)profile.o
-	$(CC) $(FLAGS) $(BUILD)profile.o $(OBJECTS) -pg -o $(BUILD)profile
+	$(CC) $(BUILD)profile.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -Llib -lbenchmark -lpthread -o $(BUILD)profile 
 
 $(BUILD)main.o: $(SRC)main.cpp
 	$(CC) $(FLAGS) -c $< -o $@

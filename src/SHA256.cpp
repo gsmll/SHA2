@@ -2,6 +2,11 @@
 
 #include <cstring>
 
+#ifdef DEBUG
+#include <iomanip>
+#include <bitset>
+#endif
+
 namespace _details 
 {
 
@@ -17,6 +22,16 @@ namespace _details
         std::uint64_t strbitsize = to_big_endian(8ul * strsize);
         std::memcpy(blks + *blk_total * BLOCK_BYTE_SIZE - sizeof(std::uint64_t), &strbitsize, sizeof(std::uint64_t));
 
+#ifdef DEBUG
+        std::cout << "PADDED MESSAGE\n" << std::hex << std::setfill('0');
+        for (std::size_t i = 0; i < BLOCK_BYTE_SIZE * *blk_total; ++i)
+        {
+            std::cout << std::setw(2) << +blks[i];
+            if (i % 4 == 3) std::cout << "\n";
+        }
+        std::cout << "\n" << std::dec << std::setfill(' ');
+#endif
+
         return blks;
     }
 
@@ -25,7 +40,7 @@ namespace _details
         using word = std::uint32_t;
 
         constexpr std::size_t bits_per_block = 512;
-        constexpr std::size_t bytes_per_block = bits_per_block / sizeof(word);
+        constexpr std::size_t bytes_per_block = bits_per_block / 8;
         constexpr std::size_t rounds_per_chunk = 64;
         constexpr word round_values[64]{ 
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -51,7 +66,7 @@ namespace _details
             word msg_schedule_arr[64];
             for (std::size_t i = 0; i < 16; ++i) 
             {
-                std::memcpy(&temp0_, blks + chunk_idx * bytes_per_block + i, sizeof(word));
+                std::memcpy(&temp0_, blks + chunk_idx * bytes_per_block + i * sizeof(word), sizeof(word));
                 msg_schedule_arr[i] = to_big_endian(temp0_);
             }
             for (std::size_t i = 16; i < rounds_per_chunk; ++i)
@@ -65,15 +80,18 @@ namespace _details
                 msg_schedule_arr[i] = msg_schedule_arr[i - 16] + temp0_ + msg_schedule_arr[i - 7] + temp1_;
             }
 
+#ifdef DEBUG
+            std::cout << "MESSAGE SCHEDULE ARRAY \n" << std::setfill('0') << std::hex;
+            for (std::size_t i = 0; i < rounds_per_chunk; ++i)
+            {
+                // std::cout << std::bitset<32>{ msg_schedule_arr[i] } << "\n";
+                std::cout << std::setw(8) << msg_schedule_arr[i] << "\n";
+            }
+            std::cout << "\n" << std::setfill(' ') << std::dec;
+#endif
             // set rotatable temp hashes
-            // 0 a 
-            // 1 b
-            // 2 c
-            // 3 d
-            // 4 e
-            // 5 f
-            // 6 g
-            // 7 h
+            // 0 1 2 3 4 5 6 7
+            // a b c d e f g h
 
             word s1, s2, ch, maj;
             word temp_hash[8];
@@ -94,12 +112,30 @@ namespace _details
                 }
                 temp_hash[0] = temp0_ + temp1_;
                 temp_hash[4] += temp0_;
+
+#ifdef DEBUG
+                std::cout << "SCHEDULE\n";
+                std::cout << std::hex << std::setfill('0');
+                for (std::size_t w = 0; w < 8; ++w)
+                {
+                    std::cout << std::setw(8) << temp_hash[w] << " ";
+                }
+                std::cout << "\n\t" << "temp0_ = " << std::bitset<32>{ temp0_ } << " | temp1_ = " << std::bitset<32>{ temp1_ } << "\n";
+
+                std::cout << std::dec << std::setfill(' ');
+#endif
             }
 
             for (std::size_t i = 0; i < 8; ++i)
             {
                 hash_data[i] += temp_hash[i];
             }
+        }
+
+        // flip back if necessary
+        for (std::size_t i = 0; i < 8; ++i)
+        {
+            hash_data[i] = to_big_endian(hash_data[i]);
         }
 
         delete[] blks;

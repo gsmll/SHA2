@@ -1,32 +1,20 @@
-#include <Hash.hpp>
+#include <bitset>
 
-#include <random>
+#include "Hash.hpp"
+#include "hash/SHA256.hpp"
 
 int main()
 {
-    Hash<256> hash1, hash2;
-    srand(time(NULL));
-    int data[64];
+    // std::cout << _details::general_sha256("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") << "\n";
 
-    for (std::size_t i = 0; i < std::size(data); ++i)
+    char* buffer = new char[1000001];
+    buffer[1000000] = '\0';
+    for (std::size_t i = 0; i < 1000000; ++i)
     {
-        data[i] = rand();
+        buffer[i] = 'a';
     }
-    hash1.set(data);
 
-    hash2 = hash1;
+    std::cout << sha256(buffer) << "\n";
 
-    std::cout << (hash1 == hash2) << "\n";
-    
-    for (std::size_t i = 0; i < std::size(data); ++i)
-    {
-        data[i] = rand();
-    }
-    hash2.set(data);
-
-    std::cout << hash2 << "\n";
-
-    Hash<32> hash3{ hash2 };
-    std::cout << hash3 << "\n";
-
+    delete[] buffer;
 }

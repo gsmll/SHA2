@@ -5,16 +5,19 @@
 
 int main()
 {
-    // std::cout << _details::general_sha256("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq") << "\n";
+  #include <bitset>
+#include "hash/SHA256.hpp"
 
-    char* buffer = new char[1000001];
-    buffer[1000000] = '\0';
-    for (std::size_t i = 0; i < 1000000; ++i)
+int main()
+{
+    std::size_t blk_total;
+    std::uint8_t* res = _details::preprocess_sha512("abc", &blk_total);
+
+    using byte_to_binary = std::bitset<8>;
+    for (std::size_t i = 0; i < blk_total * 1024 / 8; ++i)
     {
-        buffer[i] = 'a';
+        std::cout << byte_to_binary{ res[i] } << " ";
     }
-
-    std::cout << sha256(buffer) << "\n";
-
-    delete[] buffer;
+    std::cout << "\n";
+}
 }

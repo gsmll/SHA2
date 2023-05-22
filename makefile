@@ -1,7 +1,7 @@
 CC = g++
 FLAGS = -std=c++17 -Wall -pedantic -O3 -I$(INCLUDE)
 
-OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o
+OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o $(BUILD)SHA512.o
 
 INCLUDE = include/
 BUILD = build/
@@ -26,6 +26,8 @@ $(BUILD)profile.o: $(SRC)profile.cpp
 $(BUILD)SHA256.o: $(SRC)SHA256.cpp $(INCLUDE)hash/SHA256.hpp
 	$(CC) $(FLAGS) -c $< -o $@
 $(BUILD)SHA224.o: $(SRC)SHA224.cpp $(INCLUDE)hash/SHA224.hpp
+	$(CC) $(FLAGS) -c $< -o $@
+$(BUILD)SHA512.o: $(SRC)SHA512.cpp $(INCLUDE)hash/SHA512.hpp
 	$(CC) $(FLAGS) -c $< -o $@
 
 $(BUILD):

@@ -11,7 +11,8 @@
 #include "simd/SIMDUtil.hpp"
 #endif
 
-#define IMPLEMENTATION 1
+#define LLVM_MCA_BEGIN __asm volatile("# LLVM-MCA-BEGIN");
+#define LLVM_MCA_END __asm volatile("# LLVM-MCA-END");
 
 namespace _details 
 {
@@ -203,51 +204,23 @@ namespace _details
                 msg_schedule_arr[i] = to_big_endian(temp0_);
             }
 
-            __m256i a, b, c;
-            __m128i hi, lo, k;
+            __m256i a, b, c, d;
             word* ptr;
-/*             for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
-            {
-                ptr = msg_schedule_arr + i * 8; 
-
-                a = _mm256_loadu_si256((__m256i_u*) (ptr - 16));
-                b = _mm256_loadu_si256((__m256i_u*) (ptr - 15));
-                b = sigma0(b);
-                a = _mm256_add_epi32(a, b);
-
-                _mm256_storeu2_m128i(&lo, &hi, a);
-
-                k = _mm_loadu_si128((__m128i_u*) (ptr - 7));
-                hi = _mm_add_epi32(hi, k);
-                _mm_store_si128((__m128i*) ptr, hi);
-
-                ptr[0] += sigma1(ptr[-2]);
-                ptr[1] += sigma1(ptr[-1]);
-                ptr[2] += sigma1(ptr[0]);
-                ptr[3] += sigma1(ptr[1]);
-                k = _mm_loadu_si128((__m128i_u*) (ptr - 3));
-                lo = _mm_add_epi32(lo, k);
-                _mm_store_si128((__m128i*) (ptr + 4), lo);
-                ptr[4] += sigma1(ptr[2]);
-                ptr[5] += sigma1(ptr[3]);
-                ptr[6] += sigma1(ptr[4]);
-                ptr[7] += sigma1(ptr[5]);
-            } */
-
             for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
             {
-                // __asm volatile("# LLVM-MCA-BEGIN");
+                LLVM_MCA_BEGIN
 
                 ptr = msg_schedule_arr + i * 8; 
 
                 a = _mm256_loadu_si256((__m256i_u*) (ptr - 16));
                 b = _mm256_loadu_si256((__m256i_u*) (ptr - 15));
-                b = sigma0(b);
-                a = _mm256_add_epi32(a, b);
-                b = _mm256_loadu_si256((__m256i_u*) (ptr - 7));
-                a = _mm256_add_epi32(a, b); // have to correct last value;
+                c = _mm256_loadu_si256((__m256i_u*) (ptr - 7));
 
-                _mm256_storeu_si256((__m256i_u*) ptr, a);
+                d = sigma0(b);
+                b = _mm256_add_epi32(d, c);
+                c = _mm256_add_epi32(a, b); // have to correct last value;
+
+                _mm256_storeu_si256((__m256i_u*) ptr, c);
 
                 ptr[0] += sigma1(ptr[-2]);
                 ptr[2] += sigma1(ptr[0]);
@@ -259,7 +232,7 @@ namespace _details
                 ptr[5] += sigma1(ptr[3]);
                 ptr[7] += sigma1(ptr[5]) + ptr[0];
 
-                // __asm volatile("# LLVM-MCA-END");
+                LLVM_MCA_END
             }
 
 #ifdef DEBUG

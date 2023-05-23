@@ -12,17 +12,21 @@ main: $(BUILD)main
 	$(BUILD)main
 profile: $(BUILD)profile
 	$(BUILD)profile
-test: $(BUILD)test
-	$(BUILD)test
+time: $(BUILD)time
+	$(BUILD)time
 asm: $(ASM)
+
+perf: $(BUILD)time
+	perf record -F 10000 $(BUILD)time
+	perf report
 
 
 $(BUILD)main: $(BUILD)  $(OBJECTS) $(BUILD)main.o
 	$(CC) $(BUILD)main.o $(OBJECTS) $(FLAGS) -o $(BUILD)main
 $(BUILD)profile: $(BUILD) $(OBJECTS) $(BUILD)profile.o
 	$(CC) $(BUILD)profile.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -Llib -lbenchmark -lpthread -o $(BUILD)profile 
-$(BUILD)test: $(BUILD) $(OBJECTS) $(BUILD)test.o
-	$(CC) $(BUILD)test.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -o $(BUILD)test 
+$(BUILD)time: $(BUILD) $(OBJECTS) $(BUILD)test.o
+	$(CC) $(BUILD)test.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -o $(BUILD)time 
 
 $(BUILD)main.o: $(SRC)main.cpp
 	$(CC) $(FLAGS) -c $< -o $@

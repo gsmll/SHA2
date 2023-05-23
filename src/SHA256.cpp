@@ -208,7 +208,7 @@ namespace _details
             word* ptr;
             for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
             {
-                LLVM_MCA_BEGIN
+                // LLVM_MCA_BEGIN
 
                 ptr = msg_schedule_arr + i * 8; 
 
@@ -232,7 +232,7 @@ namespace _details
                 ptr[5] += sigma1(ptr[3]);
                 ptr[7] += sigma1(ptr[5]) + ptr[0];
 
-                LLVM_MCA_END
+                // LLVM_MCA_END
             }
 
 #ifdef DEBUG

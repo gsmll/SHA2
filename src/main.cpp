@@ -11,7 +11,6 @@ else std::cout << "FAILED TEST [" << msg << "]\n";
 
 int main()
 {
-    std::size_t blk_total;
-    _details::preprocess_sha512("abc", &blk_total);
+  std::cout << sha512("abc") << std::endl;
 
 }

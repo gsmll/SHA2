@@ -111,11 +111,12 @@ namespace _details
 
 [[nodiscard]] Hash<224> sha224(const char* input)
 {
-#ifdef __SHA__
+/* #ifdef __SHA__
     return _details::instruction_sha224(input);
 #elif __AVX2__
     return _details::simd_sha224(input);
 #else
     return _details::general_sha224(input);
-#endif
+#endif */
+    return _details::general_sha224(input);
 }

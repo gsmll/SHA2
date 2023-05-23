@@ -1,44 +1,9 @@
-#include "hash/SHA256.hpp"
-
-#include <cstring>
-#define DEBUG true
-
-#ifdef DEBUG
-#include <iomanip>
-#include <bitset>
-#endif
-
-#define IMPLEMENTATION 1
+#include "hash/SHA224.hpp"
 
 namespace _details 
 {
 
-    [[nodiscard]] std::uint8_t* preprocess_sha256(const char* input, std::size_t* blk_total)
-    {
-        constexpr std::size_t BLOCK_BYTE_SIZE = 512 / 8;
-
-        std::size_t strsize = std::strlen(input);
-        *blk_total = (strsize + 8 + 1) / 64 + ( (strsize + 8 + 1) % 64 ? 1 : 0 );
-        std::uint8_t* blks = new std::uint8_t[BLOCK_BYTE_SIZE * *blk_total]{ }; // paren important        
-        std::memcpy(blks, input, strsize);
-        blks[strsize] |= 1 << 7;
-        std::uint64_t strbitsize = to_big_endian(8ul * strsize);
-        std::memcpy(blks + *blk_total * BLOCK_BYTE_SIZE - sizeof(std::uint64_t), &strbitsize, sizeof(std::uint64_t));
-
-#ifdef DEBUG
-        std::cout << "PADDED MESSAGE\n" << std::hex << std::setfill('0');
-        for (std::size_t i = 0; i < BLOCK_BYTE_SIZE * *blk_total; ++i)
-        {
-            std::cout << std::setw(2) << +blks[i];
-            if (i % 4 == 3) std::cout << "\n";
-        }
-        std::cout << "\n" << std::dec << std::setfill(' ');
-#endif
-
-        return blks;
-    }
-
-    [[nodiscard]] Hash<256> general_sha256(const char* input)
+    [[nodiscard]] Hash<224> general_sha224(const char* input)
     {
         using word = std::uint32_t;
 
@@ -56,7 +21,7 @@ namespace _details
             0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
         };
 
-        word hash_data[8]{ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
+        word hash_data[8]{ 0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4 };
 
         std::size_t blk_count;
         std::uint8_t* blks = preprocess_sha256(input, &blk_count);
@@ -133,7 +98,7 @@ namespace _details
         }
 
         // flip back if necessary
-        for (std::size_t i = 0; i < 8; ++i)
+        for (std::size_t i = 0; i < 7; ++i)
         {
             hash_data[i] = to_big_endian(hash_data[i]);
         }
@@ -144,13 +109,13 @@ namespace _details
 
 }
 
-[[nodiscard]] Hash<256> sha256(const char* input)
+[[nodiscard]] Hash<224> sha224(const char* input)
 {
 #ifdef __SHA__
-    return _details::instruction_sha256(input);
+    return _details::instruction_sha224(input);
 #elif __AVX2__
-    return _details::simd_sha256(input);
+    return _details::simd_sha224(input);
 #else
-    return _details::general_sha256(input);
+    return _details::general_sha224(input);
 #endif
 }

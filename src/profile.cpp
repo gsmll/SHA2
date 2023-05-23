@@ -45,6 +45,33 @@ void BM_SHA256(benchmark::State& state)
     state.SetBytesProcessed(state.iterations() * 64 * total_elements * sizeof(rand_t));
 }
 
+void BM_NONVECTORIZED_SHA256(benchmark::State& state)
+{
+    srand(1);
+    const unsigned int N = state.range(0);
+    const unsigned int total_elements = N / sizeof(rand_t);
+
+    rand_t* rand_buffer = new rand_t[total_elements];
+    char* msg = new char[total_elements * sizeof(rand_t)];
+    
+    for (std::size_t i = 0; i < total_elements; ++i) rand_buffer[i] = rand();
+    std::memcpy(msg, rand_buffer, total_elements * sizeof(rand_t));
+
+    Hash<256> hash;
+    for (auto _ : state)
+    {
+        REPEAT64(hash = _details::general_sha256(msg);)   
+        benchmark::DoNotOptimize(hash);
+        benchmark::ClobberMemory();
+    }
+
+    delete[] rand_buffer;
+    delete[] msg;
+
+    state.SetItemsProcessed(state.iterations() * 64);
+    state.SetBytesProcessed(state.iterations() * 64 * total_elements * sizeof(rand_t));
+}
+
 void BM_SHA224(benchmark::State& state)
 {
     srand(1);
@@ -73,6 +100,7 @@ void BM_SHA224(benchmark::State& state)
 }
 
 BENCHMARK(BM_SHA256)->Arg(TARGET_BYTES);
+BENCHMARK(BM_NONVECTORIZED_SHA256)->Arg(TARGET_BYTES);
 BENCHMARK(BM_SHA224)->Arg(TARGET_BYTES);
 
 BENCHMARK_MAIN();

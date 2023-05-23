@@ -2,6 +2,7 @@ CC = g++
 FLAGS = -std=c++17 -march=native -Wall -pedantic -O3 -I$(INCLUDE)
 
 OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o
+ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm
 
 INCLUDE = include/
 BUILD = build/
@@ -13,6 +14,7 @@ profile: $(BUILD)profile
 	$(BUILD)profile
 test: $(BUILD)test
 	$(BUILD)test
+asm: $(ASM)
 
 
 $(BUILD)main: $(BUILD)  $(OBJECTS) $(BUILD)main.o
@@ -33,6 +35,11 @@ $(BUILD)SHA256.o: $(SRC)SHA256.cpp $(INCLUDE)hash/SHA256.hpp
 	$(CC) $(FLAGS) -c $< -o $@
 $(BUILD)SHA224.o: $(SRC)SHA224.cpp $(INCLUDE)hash/SHA224.hpp
 	$(CC) $(FLAGS) -c $< -o $@
+
+$(BUILD)SHA256.asm: $(SRC)SHA256.cpp $(INCLUDE)hash/SHA256.hpp
+	$(CC) $(FLAGS) -c $< -S -o $@
+$(BUILD)SHA224.asm: $(SRC)SHA224.cpp $(INCLUDE)hash/SHA224.hpp
+	$(CC) $(FLAGS) -c $< -S -o $@
 
 $(BUILD):
 	mkdir $(BUILD)

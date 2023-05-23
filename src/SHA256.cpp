@@ -160,7 +160,9 @@ namespace _details
         __m256i _b = simd::rotr(input, 18);
         __m256i _c = _mm256_srli_epi32(input, 3);
 
-        return _mm256_xor_si256( _a, _mm256_xor_si256( _b, _c ) );
+        __m256i _xor_bc = _mm256_xor_si256( _b, _c );
+
+        return _mm256_xor_si256( _a, _xor_bc );
     }
 
     INLINE static std::uint32_t sigma1(std::uint32_t input)
@@ -194,26 +196,28 @@ namespace _details
         for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx)
         {
             word temp0_, temp1_;
-            word msg_schedule_arr[64];
+            word msg_schedule_arr[64]{};
             for (std::size_t i = 0; i < 16; ++i) 
             {
                 std::memcpy(&temp0_, blks + chunk_idx * bytes_per_block + i * sizeof(word), sizeof(word));
                 msg_schedule_arr[i] = to_big_endian(temp0_);
             }
-            // word w7_lo256_buffer[4];
-            for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
-            {
-                word* ptr = msg_schedule_arr + i * 8; 
 
-                __m256i a = _mm256_loadu_si256((__m256i_u*) (ptr - 16));
-                __m256i b = _mm256_loadu_si256((__m256i_u*) (ptr - 15));
+            __m256i a, b, c;
+            __m128i hi, lo, k;
+            word* ptr;
+/*             for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
+            {
+                ptr = msg_schedule_arr + i * 8; 
+
+                a = _mm256_loadu_si256((__m256i_u*) (ptr - 16));
+                b = _mm256_loadu_si256((__m256i_u*) (ptr - 15));
                 b = sigma0(b);
                 a = _mm256_add_epi32(a, b);
 
-                __m128i hi, lo;
                 _mm256_storeu2_m128i(&lo, &hi, a);
 
-                __m128i k = _mm_loadu_si128((__m128i_u*) (ptr - 7));
+                k = _mm_loadu_si128((__m128i_u*) (ptr - 7));
                 hi = _mm_add_epi32(hi, k);
                 _mm_store_si128((__m128i*) ptr, hi);
 
@@ -228,6 +232,34 @@ namespace _details
                 ptr[5] += sigma1(ptr[3]);
                 ptr[6] += sigma1(ptr[4]);
                 ptr[7] += sigma1(ptr[5]);
+            } */
+
+            for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
+            {
+                // __asm volatile("# LLVM-MCA-BEGIN");
+
+                ptr = msg_schedule_arr + i * 8; 
+
+                a = _mm256_loadu_si256((__m256i_u*) (ptr - 16));
+                b = _mm256_loadu_si256((__m256i_u*) (ptr - 15));
+                b = sigma0(b);
+                a = _mm256_add_epi32(a, b);
+                b = _mm256_loadu_si256((__m256i_u*) (ptr - 7));
+                a = _mm256_add_epi32(a, b); // have to correct last value;
+
+                _mm256_storeu_si256((__m256i_u*) ptr, a);
+
+                ptr[0] += sigma1(ptr[-2]);
+                ptr[2] += sigma1(ptr[0]);
+                ptr[4] += sigma1(ptr[2]);
+                ptr[6] += sigma1(ptr[4]);
+
+                ptr[1] += sigma1(ptr[-1]);
+                ptr[3] += sigma1(ptr[1]);
+                ptr[5] += sigma1(ptr[3]);
+                ptr[7] += sigma1(ptr[5]) + ptr[0];
+
+                // __asm volatile("# LLVM-MCA-END");
             }
 
 #ifdef DEBUG

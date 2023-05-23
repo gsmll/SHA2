@@ -3,8 +3,6 @@
 
 #include <cstdint>
 
-#include <iostream>
-
 // Architecture specific
 
 #ifdef __OPTIMIZE__

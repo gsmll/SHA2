@@ -2,8 +2,6 @@
 
 #include <cstring>
 
-// #define DEBUG
-
 #ifdef DEBUG
 #include <iomanip>
 #include <bitset>
@@ -154,7 +152,6 @@ namespace _details
         return { hash_data };
     }
 
-/*
 #ifdef __AVX2__
 
     INLINE static __m256i sigma0(__m256i input)
@@ -166,13 +163,9 @@ namespace _details
         return _mm256_xor_si256( _a, _mm256_xor_si256( _b, _c ) );
     }
 
-    INLINE static __m64 sigma1(__m64 input)
+    INLINE static std::uint32_t sigma1(std::uint32_t input)
     {
-        __m64 _a = simd::rotr(input, 17);
-        __m64 _b = simd::rotr(input, 19);
-        __m64 _c = _mm_srli_pi32(input, 10);
-
-        return _mm_xor_si64( _a, _mm_xor_si64( _b, _c ) );
+        return rotr(input, 17) ^ rotr(input, 19) ^ (input >> 10);
     }
 
     [[nodiscard]] Hash<256> simd_sha256(const char* input)
@@ -207,81 +200,34 @@ namespace _details
                 std::memcpy(&temp0_, blks + chunk_idx * bytes_per_block + i * sizeof(word), sizeof(word));
                 msg_schedule_arr[i] = to_big_endian(temp0_);
             }
-
             // word w7_lo256_buffer[4];
-            alignas(32) word simd_buffer[8];
             for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
             {
                 word* ptr = msg_schedule_arr + i * 8; 
 
-                __m256i w16 = _mm256_loadu_si256((__m256i*) (ptr - 16));
-                __m256i w15 = _mm256_loadu_si256((__m256i*) (ptr - 15));
-                __m256i s0 = sigma0(w15);
-                _mm256_store_si256((__m256i*) simd_buffer, s0);
+                __m256i a = _mm256_loadu_si256((__m256i_u*) (ptr - 16));
+                __m256i b = _mm256_loadu_si256((__m256i_u*) (ptr - 15));
+                b = sigma0(b);
+                a = _mm256_add_epi32(a, b);
 
-                for (std::size_t k = 0; k < 8; ++k)
-                {
-                    std::size_t index = i * 8 + k;
-                    temp1_ = rotr(msg_schedule_arr[index - 2], 17) ^
-                        rotr(msg_schedule_arr[index - 2], 19) ^
-                        (msg_schedule_arr[index - 2] >> 10);
-                    msg_schedule_arr[index] = simd_buffer[k] + msg_schedule_arr[index - 7] + temp1_;
-                }
+                __m128i hi, lo;
+                _mm256_storeu2_m128i(&lo, &hi, a);
 
-#ifdef DEBUG
-                word __temp_word[8];
-                _mm256_storeu_si256((__m256i_u*) __temp_word, s0);
-                std::cout << "s0 = " << std::bitset<32>{ __temp_word[0] } << "\n";
-#endif
-                
-                __m256i s0_w16 = _mm256_add_epi32(w16, s0);
+                __m128i k = _mm_loadu_si128((__m128i_u*) (ptr - 7));
+                hi = _mm_add_epi32(hi, k);
+                _mm_store_si128((__m128i*) ptr, hi);
 
-                __m128i lo256, hi256;
-                _mm256_storeu2_m128i(&lo256, &hi256, s0_w16);
-
-                __m128i w7 = _mm_loadu_si128((__m128i*) (ptr - 7));
-                __m128i w7_lo256 = _mm_add_epi32(w7, lo256);
-                // _mm_storeu_epi32(w7_lo256_buffer, w7_lo256);
-
-                __m64 lo64, hi64;
-                _mm_storel_pi(&lo64, _mm_castsi128_ps(w7_lo256));
-                _mm_storeh_pi(&hi64, _mm_castsi128_ps(w7_lo256));
-
-                __m64 w2;
-                std::uint64_t w2val;
-                std::memcpy(&w2, ptr - 2, 8);
-                __m64 s1 = sigma1(w2);
-
-#ifdef DEBUG
-                word __2_temp[2];
-                std::memcpy(__2_temp, &w2, 8);
-                std::cout << "s1 = " << std::bitset<32>{ __2_temp[0] } << "\n";
-#endif
-
-                __m64 out[4];
-
-                out[0] = _mm_add_pi32(s1, lo64);
-#ifdef DEBUG
-                std::memcpy(__2_temp, &out[0], 8);
-                std::cout << "w = " << std::bitset<32>{ __2_temp[0] } << "\n";
-#endif
-                s1 = sigma1(out[0]);
-                out[1] = _mm_add_pi32(s1, hi64);
-
-                __m128i w3 = _mm_loadu_si128((__m128i*) (ptr - 3));
-                __m128i w3_hi256 = _mm_add_epi32(w3, hi256);
-
-                _mm_storel_pi(&lo64, _mm_castsi128_ps(w3_hi256));
-                _mm_storeh_pi(&hi64, _mm_castsi128_ps(w3_hi256));        
-
-                s1 = sigma1(out[1]);
-                out[2] = _mm_add_pi32(s1, lo64);
-                s1 = sigma1(out[2]);
-                out[3] = _mm_add_pi32(s1, hi64);
-
-                __m256i words = _mm256_loadu_si256((__m256i*) out);
-                _mm256_storeu_si256((__m256i_u*) ptr, words);  
-   
+                ptr[0] += sigma1(ptr[-2]);
+                ptr[1] += sigma1(ptr[-1]);
+                ptr[2] += sigma1(ptr[0]);
+                ptr[3] += sigma1(ptr[1]);
+                k = _mm_loadu_si128((__m128i_u*) (ptr - 3));
+                lo = _mm_add_epi32(lo, k);
+                _mm_store_si128((__m128i*) (ptr + 4), lo);
+                ptr[4] += sigma1(ptr[2]);
+                ptr[5] += sigma1(ptr[3]);
+                ptr[6] += sigma1(ptr[4]);
+                ptr[7] += sigma1(ptr[5]);
             }
 
 #ifdef DEBUG
@@ -343,17 +289,16 @@ namespace _details
         return { hash_data };
     }
 #endif
-*/
 
 }
 
 [[nodiscard]] Hash<256> sha256(const char* input)
 {
 /* #ifdef __SHA__
-    return _details::instruction_sha256(input);
+    return _details::instruction_sha256(input); */
 #if __AVX2__
     return _details::simd_sha256(input);
-#else */
+#else
     return _details::general_sha256(input);
-// #endif
+#endif
 }

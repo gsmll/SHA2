@@ -3,6 +3,8 @@
 
 #include <cstdint>
 
+#include <iostream>
+
 // Architecture specific
 
 #ifdef __OPTIMIZE__
@@ -21,6 +23,8 @@
     #undef __OPTIMIZE__
 #endif
 
+#if defined(_rotl) && defined(_rotr)
+
 INLINE auto rotl(std::uint32_t val, int d)
 {
     return _rotl(val, d);
@@ -30,6 +34,22 @@ INLINE auto rotr(std::uint32_t val, int d)
 {
     return _rotr(val, d);
 }
+
+#else
+
+INLINE auto rotl(std::uint32_t val, int d)
+{
+    d &= 31;
+    return (val << d) | (val >> (-d & 31));
+}
+
+INLINE auto rotr(std::uint32_t val, int d)
+{
+    d &= 31;
+    return (val >> d) | (val << (-d & 31));
+}
+
+#endif
 
 #else // ARM Arch
 

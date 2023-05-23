@@ -22,6 +22,10 @@ Implemented SHA224 in [SHA224.cpp](src/SHA224.cpp). Optimized SHA256 and SHA224 
 
 Attempted SIMD implementation of SHA256 (Failed miserably). Profiled program.
 
+### 5/23/2023
+
+Continued working on SIMD implementation of SHA256 in [SHA256.cpp](src/SHA256.cpp). Also began working on SHA256 implementation using machine instructions in [SHA256.cpp](src/SHA256.cpp).
+
 ## GROUP MEMBER 2
 
 ### date x

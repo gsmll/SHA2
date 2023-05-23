@@ -322,16 +322,21 @@ namespace _details
         __m128i hash_ABEF = _mm_set_epi32(0x6a09e667, 0xbb67ae85, 0x510e527f, 0x9b05688c);
 
         std::uint8_t* ptr = blks;
+        __m128i CDGF, ABEF;
+        __m128i msg, _msg, M;
+        __m128i big_endian_flip_mask = _mm_set_epi8(12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3);
         for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx, ptr += bytes_per_block)
         {
-            __m128i CDGF = hash_CDGH;
-            __m128i ABEF = hash_ABEF;
-            __m128i temp_ABEF;
+            CDGF = hash_CDGH;
+            ABEF = hash_ABEF;
 
-            __m128i msg = _mm_loadu_si128((__m128i_u*) ptr);
-            // flip msg bytes
-            __m128i M = _mm_add_epi32(msg, _mm_set_epi32(0xe9b5dba5, 0xb5c0fbcf, 0x71374491, 0x428a2f98));
-
+            // set up for round 1-3
+            msg = _mm_loadu_si128((__m128i_u*) ptr);
+            _msg = _mm_shuffle_epi8(msg, big_endian_flip_mask); // flip to W19, W18, W17, W16
+            M = _mm_add_epi32(msg, _mm_set_epi32(0xe9b5dba5, 0xb5c0fbcf, 0x71374491, 0x428a2f98)); // add to M19, M18, M17, M16
+            CDGF = _mm_sha256rnds2_epu32(CDGF, ABEF, M);
+            M = _mm_shuffle_epi32(msg, 0b00001110); // flip 64 bytes
+            ABEF = _mm_sha256rnds2_epu32(ABEF, CDGF, M);
         }
 
         delete[] blks;

@@ -504,9 +504,9 @@ namespace _details
             ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
             DEBUG_ABCDEFGH(ABEF, CDGH);
 
-            t_0 = _mm_alignr_epi8(_msg0, _msg3, 4); // W[t-7] for RUN 36
+            t_0 = _mm_alignr_epi8(_msg0, _msg3, 4); // W[t-7] for RUN 52
             _msg1 = _mm_add_epi32(_msg1, t_0); // W[t-16] + sigma0 + W[t-7] 
-            _msg2 = _mm_sha256msg1_epu32(_msg2, _msg3); // SIGMA0 for RUN 40
+            _msg2 = _mm_sha256msg1_epu32(_msg2, _msg3); // SIGMA0 for RUN 56
 
             // round 52 - 55
             _msg1 = _mm_sha256msg2_epu32(_msg1, _msg0);
@@ -517,9 +517,9 @@ namespace _details
             ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
             DEBUG_ABCDEFGH(ABEF, CDGH);
 
-            t_0 = _mm_alignr_epi8(_msg1, _msg0, 4); // W[t-7] for RUN 40
+            t_0 = _mm_alignr_epi8(_msg1, _msg0, 4); // W[t-7] for RUN 56
             _msg2 = _mm_add_epi32(_msg2, t_0); // W[t-16] + sigma0 + W[t-7] 
-            _msg3 = _mm_sha256msg1_epu32(_msg3, _msg0); // SIGMA0 for RUN 44
+            _msg3 = _mm_sha256msg1_epu32(_msg3, _msg0); // SIGMA0 for RUN 60
 
             // round 55 - 59
             _msg2 = _mm_sha256msg2_epu32(_msg2, _msg1);
@@ -530,9 +530,9 @@ namespace _details
             ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
             DEBUG_ABCDEFGH(ABEF, CDGH);
 
-            t_0 = _mm_alignr_epi8(_msg2, _msg1, 4); // W[t-7] for RUN 44
+            t_0 = _mm_alignr_epi8(_msg2, _msg1, 4); // W[t-7] for RUN 60
             _msg3 = _mm_add_epi32(_msg3, t_0); // W[t-16] + sigma0 + W[t-7] 
-            _msg0 = _mm_sha256msg1_epu32(_msg0, _msg1); // SIGMA0 for RUN 48
+            _msg0 = _mm_sha256msg1_epu32(_msg0, _msg1); // SIGMA0 for RUN 64
 
             // round 60 - 63
             _msg3 = _mm_sha256msg2_epu32(_msg3, _msg2);
@@ -543,9 +543,8 @@ namespace _details
             ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
             DEBUG_ABCDEFGH(ABEF, CDGH);
 
-            t_0 = _mm_alignr_epi8(_msg3, _msg2, 4); // W[t-7] for RUN 48
+            t_0 = _mm_alignr_epi8(_msg3, _msg2, 4); // W[t-7] for RUN 64
             _msg0 = _mm_add_epi32(_msg0, t_0); // W[t-16] + sigma0 + W[t-7] 
-            _msg1 = _mm_sha256msg1_epu32(_msg1, _msg2); // SIGMA0 for RUN 52
 
             hash_ABEF = _mm_add_epi32(hash_ABEF, ABEF);
             hash_CDGH = _mm_add_epi32(hash_CDGH, CDGH);

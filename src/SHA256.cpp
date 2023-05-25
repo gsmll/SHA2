@@ -1,7 +1,6 @@
 #include "hash/SHA256.hpp"
 
 #include <cstring>
-#define DEBUG true
 
 // #define DEBUG
 

@@ -67,6 +67,18 @@ INLINE auto rotr(std::uint32_t val, int d)
 
 // Not architecture specific
 
+INLINE auto rotl(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val << d) | (val >> (-d & 63));
+}
+
+INLINE auto rotr(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val >> d) | (val << (-d & 63));
+}
+
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 
 INLINE auto to_big_endian(std::uint32_t val) { return __builtin_bswap32(val); }

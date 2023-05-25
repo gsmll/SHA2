@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-#define DEBUG
+// #define DEBUG
 
 #ifdef DEBUG
 #include <iomanip>
@@ -321,7 +321,6 @@ namespace _details
 
         constexpr std::size_t bits_per_block = 512;
         constexpr std::size_t bytes_per_block = bits_per_block / 8;
-        constexpr std::size_t rounds_per_chunk = 64;
 
         std::size_t blk_count;
         std::uint8_t* blks = preprocess_sha256(input, &blk_count);
@@ -553,24 +552,30 @@ namespace _details
             DEBUG_ABCDEFGH(hash_ABEF, hash_CDGH);
         }
 
-        // A B E F
-        // 3 2 1 0
-        // C D G H
-        //  
-        hash_CDGH = _mm_shuffle_epi32(hash_CDGH, 0b00'01'10'11); // E F A B
+        hash_CDGH = _mm_shuffle_epi32(hash_CDGH, 0b00'01'10'11); // H G D C
+        hash_ABEF = _mm_shuffle_epi32(hash_ABEF, 0b10'11'00'01); // B A F E
         __m128i ABCD = _mm_alignr_epi8(hash_CDGH, hash_ABEF, 8);
+        __m128i EFGH = _mm_blend_epi32(hash_ABEF, hash_CDGH, 0b0000'1'1'0'0); // H G F E
         ABCD = _mm_shuffle_epi8(ABCD, big_endian_flip_mask);
+        EFGH = _mm_shuffle_epi8(EFGH, big_endian_flip_mask);
         
 #ifdef DEBUG
         std::cout << std::hex << std::setfill('0') << "ABCD = ";
         word ABCD_words[4];
         _mm_storeu_si128((__m128i_u*) ABCD_words, ABCD);
-        for (int i = 0; i < 4; ++i) std::cout << ABCD_words[i] << " ";
+        for (int i = 0; i < 4; ++i) std::cout << std::setw(8) << ABCD_words[i] << " ";
+        std::cout << "\nEFGH = ";
+        _mm_storeu_si128((__m128i_u*) ABCD_words, EFGH);
+        for (int i = 0; i < 4; ++i) std::cout << std::setw(8) << ABCD_words[i] << " ";
         std::cout << std::dec << std::setfill(' ') << "\n";
 #endif
 
+        word final_hash[8];
+        _mm_storeu_si128((__m128i_u*) final_hash, ABCD);
+        _mm_storeu_si128((__m128i_u*) (final_hash + 4), EFGH);
+
         delete[] blks;
-        return {};
+        return { final_hash };
     }
 
 #endif

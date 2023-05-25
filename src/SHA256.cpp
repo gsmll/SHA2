@@ -2,6 +2,8 @@
 
 #include <cstring>
 
+#define DEBUG
+
 #ifdef DEBUG
 #include <iomanip>
 #include <bitset>
@@ -29,14 +31,8 @@ namespace _details
         std::uint64_t strbitsize = to_big_endian(8ul * strsize);
         std::memcpy(blks + *blk_total * BLOCK_BYTE_SIZE - sizeof(std::uint64_t), &strbitsize, sizeof(std::uint64_t));
 
-#ifdef DEBUG
+/* #ifdef DEBUG
         std::cout << "PADDED MESSAGE\n" << std::hex << std::setfill('0');
-/*         for (std::size_t i = 0; i < BLOCK_BYTE_SIZE * *blk_total; ++i)
-        {
-            std::cout << std::setw(2) << +blks[i];
-            if (i % 4 == 3) std::cout << "\n";
-        } */
-
         for (std::size_t i = 0; i < *blk_total * 512 / 32; ++i)
         {
             uint32_t val;
@@ -44,7 +40,7 @@ namespace _details
             std::cout << std::bitset<32>{ val } << "\n";
         }
         std::cout << "\n" << std::dec << std::setfill(' ');
-#endif
+#endif */
 
         return blks;
     }
@@ -85,6 +81,8 @@ namespace _details
             }
             for (std::size_t i = 16; i < rounds_per_chunk; ++i)
             {
+                // LLVM_MCA_BEGIN
+
                 temp0_ = rotr(msg_schedule_arr[i - 15], 7) ^ 
                          rotr(msg_schedule_arr[i - 15], 18) ^
                          (msg_schedule_arr[i - 15] >> 3);
@@ -92,6 +90,8 @@ namespace _details
                          rotr(msg_schedule_arr[i - 2], 19) ^
                          (msg_schedule_arr[i - 2] >> 10);
                 msg_schedule_arr[i] = msg_schedule_arr[i - 16] + temp0_ + msg_schedule_arr[i - 7] + temp1_;
+
+                // LLVM_MCA_END
             }
 
 #ifdef DEBUG
@@ -297,6 +297,24 @@ namespace _details
 
 #ifdef __SHA__
 
+#ifdef DEBUG
+    #define DEBUG_ABCDEFGH(abef, cdgh)                              \
+    _mm_storeu_si128((__m128i_u*) words, abef);                     \
+    _mm_storeu_si128((__m128i_u*) (words + 4), cdgh);               \
+    std::cout << std::setfill('0');                                 \
+    std::cout << std::hex << std::setw(8) << words[3] << " "        \
+                          << std::setw(8) << words[2] << " "        \
+                          << std::setw(8) << words[7] << " "        \
+                          << std::setw(8) << words[6] << " "        \
+                          << std::setw(8) << words[1] << " "        \
+                          << std::setw(8) << words[0] << " "        \
+                          << std::setw(8) << words[5] << " "        \
+                          << std::setw(8) << words[4] << "\n";      \
+    std::cout << std::dec << std::setfill(' ')
+#else 
+    #define DEBUG_ABCDEFGH(abef, cdgh)
+#endif
+
     [[nodiscard]] Hash<256> instruction_sha256(const char* input)
     {
         using word = std::uint32_t;
@@ -304,9 +322,7 @@ namespace _details
         constexpr std::size_t bits_per_block = 512;
         constexpr std::size_t bytes_per_block = bits_per_block / 8;
         constexpr std::size_t rounds_per_chunk = 64;
-        constexpr word round_values[64]{ 
-            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,        0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,        0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+        constexpr word round_values[]{ 
             0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,        0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
             0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,        0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
             0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,        0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
@@ -314,29 +330,77 @@ namespace _details
             0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,        0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
             0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,        0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
         };
+        word hash_data[8]{ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
 
         std::size_t blk_count;
         std::uint8_t* blks = preprocess_sha256(input, &blk_count);
 
         __m128i hash_CDGH = _mm_set_epi32(0x3c6ef372, 0xa54ff53a, 0x1f83d9ab, 0x5be0cd19);
-        __m128i hash_ABEF = _mm_set_epi32(0x6a09e667, 0xbb67ae85, 0x510e527f, 0x9b05688c);
+        __m128i hash_ABEF = _mm_set_epi32(0x6a09e667, 0xbb67ae85, 0x510e527f, 0x9b05688c); 
 
         std::uint8_t* ptr = blks;
-        __m128i CDGF, ABEF;
-        __m128i msg, _msg, M;
+        __m128i CDGH, ABEF;
+        __m128i msg, _msg0, _msg1, sig0_16, sig0_20, sig0_24, sig0_28;
         __m128i big_endian_flip_mask = _mm_set_epi8(12, 13, 14, 15, 8, 9, 10, 11, 4, 5, 6, 7, 0, 1, 2, 3);
+
+#ifdef DEBUG
+        word words[8];
+#endif
+
         for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx, ptr += bytes_per_block)
         {
-            CDGF = hash_CDGH;
+            CDGH = hash_CDGH;
             ABEF = hash_ABEF;
 
-            // set up for round 1-3
+            // round 1-3
             msg = _mm_loadu_si128((__m128i_u*) ptr);
-            _msg = _mm_shuffle_epi8(msg, big_endian_flip_mask); // flip to W19, W18, W17, W16
-            M = _mm_add_epi32(msg, _mm_set_epi32(0xe9b5dba5, 0xb5c0fbcf, 0x71374491, 0x428a2f98)); // add to M19, M18, M17, M16
-            CDGF = _mm_sha256rnds2_epu32(CDGF, ABEF, M);
-            M = _mm_shuffle_epi32(msg, 0b00001110); // flip 64 bytes
-            ABEF = _mm_sha256rnds2_epu32(ABEF, CDGF, M);
+            _msg0 = _mm_shuffle_epi8(msg, big_endian_flip_mask); // flip to W19, W18, W17, W16
+            msg = _mm_add_epi32(_msg0, _mm_set_epi32(0xe9b5dba5, 0xb5c0fbcf, 0x71374491, 0x428a2f98)); // add to M19, M18, M17, M16
+            CDGH = _mm_sha256rnds2_epu32(CDGH, ABEF, msg);
+            DEBUG_ABCDEFGH(CDGH, ABEF);
+            msg = _mm_shuffle_epi32(msg, 0b00001110); // flip 64 bytes [ 0 0 3 2 ]
+            ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
+            DEBUG_ABCDEFGH(ABEF, CDGH);
+
+            // round 4-7
+            msg = _mm_loadu_si128((__m128i_u*) (ptr + 1 * sizeof(word) * 4));
+            _msg1 = _mm_shuffle_epi8(msg, big_endian_flip_mask); 
+            msg = _mm_add_epi32(_msg1, _mm_set_epi32(0xab1c5ed5, 0x923f82a4, 0x59f111f1, 0x3956c25b));
+            CDGH = _mm_sha256rnds2_epu32(CDGH, ABEF, msg);
+            DEBUG_ABCDEFGH(CDGH, ABEF);
+            msg = _mm_shuffle_epi32(msg, 0b00001110); // flip 64 bytes
+            ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
+            DEBUG_ABCDEFGH(ABEF, CDGH);
+
+            sig0_16 = _mm_sha256msg1_epu32(_msg0, _msg1); // SIGMA0 for RUN 16
+
+            // round 8 - 11
+            msg = _mm_loadu_si128((__m128i_u*) (ptr + 2 * sizeof(word) * 4));
+            _msg0 = _mm_shuffle_epi8(msg, big_endian_flip_mask); 
+            msg = _mm_add_epi32(_msg0, _mm_set_epi32(0x550c7dc3, 0x243185be, 0x12835b01, 0xd807aa98));
+            CDGH = _mm_sha256rnds2_epu32(CDGH, ABEF, msg);
+            DEBUG_ABCDEFGH(CDGH, ABEF);
+            msg = _mm_shuffle_epi32(msg, 0b00001110); // flip 64 bytes
+            ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
+            DEBUG_ABCDEFGH(ABEF, CDGH);
+
+            sig0_20 = _mm_sha256msg1_epu32(_msg1, _msg0); // SIGMA0 for RUN 20
+
+            // round 12 - 15
+            msg = _mm_loadu_si128((__m128i_u*) (ptr + 3 * sizeof(word) * 4));
+            _msg1 = _mm_shuffle_epi8(msg, big_endian_flip_mask); 
+            msg = _mm_add_epi32(_msg1, _mm_set_epi32(0xc19bf174, 0x9bdc06a7, 0x80deb1fe, 0x72be5d74));
+            CDGH = _mm_sha256rnds2_epu32(CDGH, ABEF, msg);
+            DEBUG_ABCDEFGH(CDGH, ABEF);
+            msg = _mm_shuffle_epi32(msg, 0b00001110); // flip 64 bytes
+            ABEF = _mm_sha256rnds2_epu32(ABEF, CDGH, msg);
+            DEBUG_ABCDEFGH(ABEF, CDGH);
+
+            sig0_24 = _mm_sha256msg1_epu32(_msg0, _msg1); // SIGMA0 for RUN 24
+
+            // begin calculating messages
+            // round 16 - 19
+
         }
 
         delete[] blks;
@@ -349,9 +413,9 @@ namespace _details
 
 [[nodiscard]] Hash<256> sha256(const char* input)
 {
-/* #ifdef __SHA__
-    return _details::instruction_sha256(input); */
-#if __AVX2__
+#ifdef __SHA__
+    return _details::instruction_sha256(input);
+#elif __AVX2__
     return _details::simd_sha256(input);
 #else
     return _details::general_sha256(input);

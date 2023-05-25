@@ -152,11 +152,9 @@ namespace _details
 }}
 [[nodiscard]] Hash<384> sha384(const char* input)
 {
-#ifdef __SHA__
-    return _details::instruction_sha384(input);
-#elif __AVX2__
+/* #elif __AVX2__
     return _details::simd_sha384(input);
-#else
+#else */
     return _details::general_sha384(input);
-#endif
+//#endif
 }

@@ -14,10 +14,6 @@ namespace _details
     [[nodiscard]] Hash<384> simd_sha384(const char* input);
 #endif
 
-#ifdef __SHA__
-    [[nodiscard]] Hash<384> instruction_sha384(const char* input);
-#endif
-
 }
 
 [[nodiscard]] Hash<384> sha384(const char* input);

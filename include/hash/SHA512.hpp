@@ -14,10 +14,6 @@ namespace _details
     [[nodiscard]] Hash<512> simd_sha512(const char* input);
 #endif
 
-#ifdef __SHA__
-    [[nodiscard]] Hash<512> instruction_sha512(const char* input);
-#endif
-
 }
 
 [[nodiscard]] Hash<512> sha512(const char* input);

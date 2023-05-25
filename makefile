@@ -1,13 +1,8 @@
 CC = g++
 FLAGS = -std=c++17 -march=native -Wall -pedantic -O3 -I$(INCLUDE)
 
-<<<<<<< HEAD
-OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o
-ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm
-=======
 OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o $(BUILD)SHA512.o $(BUILD)SHA384.o
-
->>>>>>> e1a3d210316a3b1d08c1dd43dae6464eed16608a
+ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm
 
 INCLUDE = include/
 BUILD = build/
@@ -31,13 +26,9 @@ perf: $(BUILD)time
 
 
 $(BUILD)main: $(BUILD)  $(OBJECTS) $(BUILD)main.o
-<<<<<<< HEAD
 	$(CC) $(BUILD)main.o $(OBJECTS) $(FLAGS) -o $(BUILD)main
-=======
-	$(CC) $(FLAGS) $(BUILD)main.o $(OBJECTS) -o $(BUILD)main
 $(BUILD)Shaker: $(BUILD)  $(OBJECTS) $(BUILD)Shaker.o
 	$(CC) $(FLAGS) $(BUILD)Shaker.o $(OBJECTS) -o $(BUILD)Shaker
->>>>>>> e1a3d210316a3b1d08c1dd43dae6464eed16608a
 $(BUILD)profile: $(BUILD) $(OBJECTS) $(BUILD)profile.o
 	$(CC) $(BUILD)profile.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -Llib -lbenchmark -lpthread -o $(BUILD)profile 
 $(BUILD)time: $(BUILD) $(OBJECTS) $(BUILD)test.o

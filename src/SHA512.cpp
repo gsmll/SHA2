@@ -152,11 +152,10 @@ namespace _details
 }}
 [[nodiscard]] Hash<512> sha512(const char* input)
 {
-#ifdef __SHA__
-    return _details::instruction_sha512(input);
-#elif __AVX2__
+
+/* #elif __AVX2__
     return _details::simd_sha512(input);
-#else
+#else */
     return _details::general_sha512(input);
-#endif
+// #endif
 }

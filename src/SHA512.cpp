@@ -1,7 +1,7 @@
 #include "hash/SHA512.hpp"
 
 #include <cstring>
-#define DEBUG true
+//#define DEBUG true
 
 #ifdef DEBUG
 #include <iomanip>

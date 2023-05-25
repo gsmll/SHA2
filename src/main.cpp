@@ -12,5 +12,6 @@ else std::cout << "FAILED TEST [" << msg << "]\n";
 int main()
 {
   std::cout << sha512("abc") << std::endl;
+  
 
 }

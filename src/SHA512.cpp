@@ -28,7 +28,7 @@ namespace _details
         for (std::size_t i = 0; i < BLOCK_BYTE_SIZE * *blk_total; ++i)
         {
             std::cout << std::setw(2) << +blks[i];
-            if (i % 4 == 3) std::cout << "\n";
+            if (i % 8 == 7) std::cout << "\n";
         }
         std::cout << "\n" << std::dec << std::setfill(' ');
 #endif
@@ -85,6 +85,11 @@ namespace _details
                 temp1_ = rotr(msg_schedule_arr[i - 2], 19) ^
                          rotr(msg_schedule_arr[i - 2], 61) ^
                          (msg_schedule_arr[i - 2] >> 6);
+#ifdef DEBUG
+
+                std::cout << "TEMP0 = " << std::bitset<64>{ temp0_ } << "\nTEMP1 = " << std::bitset<64>{ temp1_ } << "\n";
+
+#endif
                 msg_schedule_arr[i] = msg_schedule_arr[i - 16] + temp0_ + msg_schedule_arr[i - 7] + temp1_;
             }
 

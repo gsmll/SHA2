@@ -21,17 +21,17 @@
     #undef __OPTIMIZE__
 #endif
 
-INLINE auto rotl(std::uint32_t val, int d)
-{
-    return _rotl(val, d);
-}
+// INLINE auto rotl(std::uint32_t val, int d)
+// {
+//     return _rotl(val, d);
+// }
 
-INLINE auto rotr(std::uint32_t val, int d)
-{
-    return _rotr(val, d);
-}
+// INLINE auto rotr(std::uint32_t val, int d)
+// {
+//     return _rotr(val, d);
+// }
 
-#else // ARM Arch
+// #else // ARM Arch
 
 INLINE auto rotl(std::uint32_t val, int d)
 {
@@ -43,6 +43,17 @@ INLINE auto rotr(std::uint32_t val, int d)
 {
     d &= 31;
     return (val >> d) | (val << (-d & 31));
+}
+INLINE auto rotl(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val << d) | (val >> (-d & 63));
+}
+
+INLINE auto rotr(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val >> d) | (val << (-d & 63));
 }
 
 #endif

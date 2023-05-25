@@ -11,7 +11,7 @@ std::int64_t __attribute__((optimize("O0"))) chrono_time_it(Func&& func, Args&&.
 {
     using namespace std::chrono;
     auto t0 = high_resolution_clock::now();
-    func(std::forward<Args>(args)...);
+    volatile auto res = func(std::forward<Args>(args)...);
     auto t1 = high_resolution_clock::now();
     auto delta_time = duration_cast<TimeUnit>(t1 - t0);
     return delta_time.count();
@@ -20,7 +20,7 @@ std::int64_t __attribute__((optimize("O0"))) chrono_time_it(Func&& func, Args&&.
 template<typename Func, typename... Args>
 std::tuple<long, long, long> __attribute__((optimize("O0"))) high_res_time_it(Func&& func, Args&&... args)
 {
-    constexpr std::uint64_t nano_in_sec = 10e9;
+    constexpr std::uint64_t nano_in_sec = 1e9;
 
     timespec rt0, ct0, tt0;
     clock_gettime(CLOCK_REALTIME, &rt0);

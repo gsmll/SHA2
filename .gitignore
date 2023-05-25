@@ -56,3 +56,7 @@ build/
 
 perf.data
 perf.data.old
+
+lib/
+include/benchmark/
+*.txt

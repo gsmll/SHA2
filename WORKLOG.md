@@ -18,6 +18,22 @@ Completed implementing first version of SHA256 in [SHA256.cpp](src/SHA256.cpp).
 
 Implemented SHA224 in [SHA224.cpp](src/SHA224.cpp). Optimized SHA256 and SHA224 by ~10%. Implemented code for profiling code in [ProfileUtil.hpp](include/ProfileUtil.hpp) and an user-defined literal for hashes in [Hash.hpp](include/Hash.hpp) that is useful for testing code.
 
+### 5/22/2023
+
+Attempted SIMD implementation of SHA256 (Failed miserably). Profiled program.
+
+### 5/23/2023
+
+Continued working on SIMD implementation of SHA256 in [SHA256.cpp](src/SHA256.cpp). Also began working on SHA256 implementation using machine instructions in [SHA256.cpp](src/SHA256.cpp).
+
+### 5/24/2023
+
+Continued working the SHA intrinsics version of SHA256. Did not make any real progress.
+
+### 5/25/2023
+
+Finally completed SHA intrinsics verson of SHA256 as found in [SHA256.cpp](src/SHA256.cpp). Also performed tests and profiled the code. 
+
 ## GROUP MEMBER 2
 
 ### date x

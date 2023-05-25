@@ -1,7 +1,6 @@
 #include "hash/SHA512.hpp"
 
 #include <cstring>
-//#define DEBUG true
 
 #ifdef DEBUG
 #include <iomanip>
@@ -16,7 +15,7 @@ namespace _details
         constexpr std::size_t BLOCK_BYTE_SIZE = 1024 / 8;
 
         std::size_t strsize = std::strlen(input);
-        *blk_total = (strsize + 8 + 1) / 128 + ( (strsize + 8 + 1) % 128 ? 1 : 0 );
+        *blk_total = (strsize + 8 + 1) / 64 + ( (strsize + 8 + 1) % 64 ? 1 : 0 );
         std::uint8_t* blks = new std::uint8_t[BLOCK_BYTE_SIZE * *blk_total]{ }; // paren important        
         std::memcpy(blks, input, strsize);
         blks[strsize] |= 1 << 7;

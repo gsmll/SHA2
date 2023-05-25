@@ -1,6 +1,5 @@
 #ifndef UTILITY
 #define UTILITY
-#include <iostream>
 #include <cstdint>
 
 // Architecture specific

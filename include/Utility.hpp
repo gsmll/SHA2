@@ -46,7 +46,6 @@ INLINE auto rotr(std::uint32_t val, int d)
     d &= 31;
     return (val >> d) | (val << (-d & 31));
 }
-
 #endif
 
 #else // ARM Arch
@@ -62,7 +61,18 @@ INLINE auto rotr(std::uint32_t val, int d)
     d &= 31;
     return (val >> d) | (val << (-d & 31));
 }
+INLINE auto rotl(std::uint64_t val, int d)
+{
+  
+d &= 63;
+    return (val << d) | (val >> (-d & 63));
+}
 
+INLINE auto rotr(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val >> d) | (val << (-d & 63));
+}
 #endif
 
 // Not architecture specific

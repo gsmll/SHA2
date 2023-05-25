@@ -3,6 +3,7 @@
 #include "Hash.hpp"
 #include "hash/SHA256.hpp"
 #include "hash/SHA224.hpp"
+#include "hash/SHA512.hpp"
 
 #define TEST_EQ(name, expr, correct)                            \
 {                                                               \
@@ -37,5 +38,11 @@ int main()
 
     TEST_EQ("SHA224 MEDIUM MESSAGE", sha224("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq"),
         0x75388b16512776cc5dba5da1fd890150b0c6455cb4f58b1952522525_hash);
+
+    TEST_EQ("SHA512 SHORT MESSAGE", sha512("abc"),
+        0xddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f_hash);
+
+    TEST_EQ("SHA512 MEDIUM MESSAGE", sha512("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu"),
+        0x8e959b75dae313da8cf4f72814fc143f8f7779c6eb9f7fa17299aeadb6889018501d289e4900f7e4331b99dec4b5433ac7d329eeb6dd26545e96e55b874be909_hash);
 
 }

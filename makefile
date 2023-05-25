@@ -1,8 +1,13 @@
 CC = g++
 FLAGS = -std=c++17 -march=native -Wall -pedantic -O3 -I$(INCLUDE)
 
+<<<<<<< HEAD
 OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o
 ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm
+=======
+OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o $(BUILD)SHA512.o $(BUILD)SHA384.o
+
+>>>>>>> e1a3d210316a3b1d08c1dd43dae6464eed16608a
 
 INCLUDE = include/
 BUILD = build/
@@ -10,6 +15,10 @@ SRC = src/
 
 main: $(BUILD)main
 	$(BUILD)main
+
+Shaker: $(BUILD)Shaker
+	$(BUILD)Shaker
+
 profile: $(BUILD)profile
 	$(BUILD)profile
 time: $(BUILD)time
@@ -22,13 +31,21 @@ perf: $(BUILD)time
 
 
 $(BUILD)main: $(BUILD)  $(OBJECTS) $(BUILD)main.o
+<<<<<<< HEAD
 	$(CC) $(BUILD)main.o $(OBJECTS) $(FLAGS) -o $(BUILD)main
+=======
+	$(CC) $(FLAGS) $(BUILD)main.o $(OBJECTS) -o $(BUILD)main
+$(BUILD)Shaker: $(BUILD)  $(OBJECTS) $(BUILD)Shaker.o
+	$(CC) $(FLAGS) $(BUILD)Shaker.o $(OBJECTS) -o $(BUILD)Shaker
+>>>>>>> e1a3d210316a3b1d08c1dd43dae6464eed16608a
 $(BUILD)profile: $(BUILD) $(OBJECTS) $(BUILD)profile.o
 	$(CC) $(BUILD)profile.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -Llib -lbenchmark -lpthread -o $(BUILD)profile 
 $(BUILD)time: $(BUILD) $(OBJECTS) $(BUILD)test.o
 	$(CC) $(BUILD)test.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -o $(BUILD)time 
 
 $(BUILD)main.o: $(SRC)main.cpp
+	$(CC) $(FLAGS) -c $< -o $@
+$(BUILD)Shaker.o: $(SRC)shashaker/Shake.cpp
 	$(CC) $(FLAGS) -c $< -o $@
 $(BUILD)profile.o: $(SRC)profile.cpp
 	$(CC) $(FLAGS) -c $< -o $@
@@ -38,6 +55,10 @@ $(BUILD)test.o: $(SRC)test.cpp
 $(BUILD)SHA256.o: $(SRC)SHA256.cpp $(INCLUDE)hash/SHA256.hpp
 	$(CC) $(FLAGS) -c $< -o $@
 $(BUILD)SHA224.o: $(SRC)SHA224.cpp $(INCLUDE)hash/SHA224.hpp
+	$(CC) $(FLAGS) -c $< -o $@
+$(BUILD)SHA512.o: $(SRC)SHA512.cpp $(INCLUDE)hash/SHA512.hpp
+	$(CC) $(FLAGS) -c $< -o $@
+$(BUILD)SHA384.o: $(SRC)SHA384.cpp $(INCLUDE)hash/SHA384.hpp
 	$(CC) $(FLAGS) -c $< -o $@
 
 $(BUILD)SHA256.asm: $(SRC)SHA256.cpp $(INCLUDE)hash/SHA256.hpp

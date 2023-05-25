@@ -343,6 +343,8 @@ namespace _details
             CDGH = hash_CDGH;
             ABEF = hash_ABEF;
 
+            LLVM_MCA_BEGIN
+
             // round 0-3
             _msg0 = _mm_loadu_si128((__m128i_u*) ptr);
             _msg0 = _mm_shuffle_epi8(_msg0, big_endian_flip_mask); // flip to W19, W18, W17, W16
@@ -549,6 +551,8 @@ namespace _details
             hash_ABEF = _mm_add_epi32(hash_ABEF, ABEF);
             hash_CDGH = _mm_add_epi32(hash_CDGH, CDGH);
             DEBUG_ABCDEFGH(hash_ABEF, hash_CDGH);
+
+            LLVM_MCA_END
         }
 
         hash_CDGH = _mm_shuffle_epi32(hash_CDGH, 0b00'01'10'11); // H G D C

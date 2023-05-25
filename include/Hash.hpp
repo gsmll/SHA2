@@ -166,4 +166,20 @@ _details::enable_hash_literal_t<C...> operator""_hash()
     return _details::hex_to_hash({ C... });
 }
 
+template<std::size_t N>
+Hash<N> str_to_hash(const char* cstr)
+{
+    std::size_t str_size = strlen(cstr);
+    std::size_t min = std::min(str_size / 2, N / 2);
+    std::uint8_t data[N / 8];   
+    for (std::size_t i = 0; i < min; ++i)
+    {   
+        data[i] = static_cast<std::uint8_t>(16 * _details::hex_char_to_int(cstr[2 * i])) + _details::hex_char_to_int(cstr[2 * i + 1]);
+    }
+
+    Hash<N> hash{};
+    std::memcpy(hash.data, data, min);
+    return hash;
+}
+
 #endif

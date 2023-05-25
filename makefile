@@ -2,7 +2,7 @@ CC = g++
 FLAGS = -std=c++17 -march=native -Wall -pedantic -O3 -I$(INCLUDE)
 
 OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o $(BUILD)SHA512.o $(BUILD)SHA384.o
-ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm
+ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm $(BUILD)SHA512.asm $(BUILD)SHA384.asm
 
 INCLUDE = include/
 BUILD = build/
@@ -55,6 +55,10 @@ $(BUILD)SHA384.o: $(SRC)SHA384.cpp $(INCLUDE)hash/SHA384.hpp
 $(BUILD)SHA256.asm: $(SRC)SHA256.cpp $(INCLUDE)hash/SHA256.hpp
 	$(CC) $(FLAGS) -c $< -S -o $@
 $(BUILD)SHA224.asm: $(SRC)SHA224.cpp $(INCLUDE)hash/SHA224.hpp
+	$(CC) $(FLAGS) -c $< -S -o $@
+$(BUILD)SHA512.asm: $(SRC)SHA512.cpp $(INCLUDE)hash/SHA512.hpp
+	$(CC) $(FLAGS) -c $< -S -o $@
+$(BUILD)SHA384.asm: $(SRC)SHA384.cpp $(INCLUDE)hash/SHA384.hpp
 	$(CC) $(FLAGS) -c $< -S -o $@
 
 $(BUILD):

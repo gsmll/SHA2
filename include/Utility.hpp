@@ -1,5 +1,6 @@
 #ifndef UTILITY
 #define UTILITY
+
 #include <cstdint>
 
 // Architecture specific
@@ -20,6 +21,8 @@
     #undef __OPTIMIZE__
 #endif
 
+#if defined(_rotl) && defined(_rotr)
+
 INLINE auto rotl(std::uint32_t val, int d)
 {
     return _rotl(val, d);
@@ -29,6 +32,33 @@ INLINE auto rotr(std::uint32_t val, int d)
 {
     return _rotr(val, d);
 }
+
+#else
+
+INLINE auto rotl(std::uint32_t val, int d)
+{
+    d &= 31;
+    return (val << d) | (val >> (-d & 31));
+}
+
+INLINE auto rotr(std::uint32_t val, int d)
+{
+    d &= 31;
+    return (val >> d) | (val << (-d & 31));
+}
+INLINE auto rotl(std::uint64_t val, int d)
+{
+  
+d &= 63;
+    return (val << d) | (val >> (-d & 63));
+}
+
+INLINE auto rotr(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val >> d) | (val << (-d & 63));
+}
+#endif
 
 #else // ARM Arch
 
@@ -55,7 +85,6 @@ INLINE auto rotr(std::uint64_t val, int d)
     d &= 63;
     return (val >> d) | (val << (-d & 63));
 }
-
 #endif
 
 // Not architecture specific

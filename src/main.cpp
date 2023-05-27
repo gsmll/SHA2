@@ -19,7 +19,7 @@
 
 int main()
 {
-    TEST_EQ("SHA256 SHORT MESSAGE", sha256("hello world"), 
+    TEST_EQ("SHA256 SHORT MESSAGE", sha256("abc"), 
         0xba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad_hash)
 
 

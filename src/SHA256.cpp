@@ -2,8 +2,6 @@
 
 #include <cstring>
 
-#define DEBUG
-
 #ifdef DEBUG
 #include <iomanip>
 #include <bitset>
@@ -157,145 +155,6 @@ namespace _details
 
 #ifdef __AVX2__
 
-    INLINE static __m256i sigma0(__m256i input)
-    {
-        __m256i _a = simd::rotr(input, 7);
-        __m256i _b = simd::rotr(input, 18);
-        __m256i _c = _mm256_srli_epi32(input, 3);
-
-        __m256i _xor_bc = _mm256_xor_si256( _b, _c );
-
-        return _mm256_xor_si256( _a, _xor_bc );
-    }
-
-    INLINE static std::uint32_t sigma1(std::uint32_t input)
-    {
-        return rotr(input, 17) ^ rotr(input, 19) ^ (input >> 10);
-    }
-
-    [[nodiscard]] Hash<256> simd_sha256(const char* input)
-    {
-        using word = std::uint32_t;
-
-        constexpr std::size_t bits_per_block = 512;
-        constexpr std::size_t bytes_per_block = bits_per_block / 8;
-        constexpr std::size_t rounds_per_chunk = 64;
-        constexpr word round_values[64]{ 
-            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-            0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-            0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-            0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-            0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-            0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-            0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
-        };
-
-        word hash_data[8]{ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
-
-        std::size_t blk_count;
-        std::uint8_t* blks = preprocess_sha256(input, &blk_count);
-
-        for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx)
-        {
-            word temp0_, temp1_;
-            word msg_schedule_arr[64]{};
-            for (std::size_t i = 0; i < 16; ++i) 
-            {
-                std::memcpy(&temp0_, blks + chunk_idx * bytes_per_block + i * sizeof(word), sizeof(word));
-                msg_schedule_arr[i] = to_big_endian(temp0_);
-            }
-
-            __m256i a, b, c, d;
-            word* ptr;
-            for (std::size_t i = 2; i < rounds_per_chunk / 8; ++i)
-            {
-                // LLVM_MCA_BEGIN
-
-                ptr = msg_schedule_arr + i * 8; 
-
-                a = _mm256_loadu_si256((__m256i_u*) (ptr - 16));
-                b = _mm256_loadu_si256((__m256i_u*) (ptr - 15));
-                c = _mm256_loadu_si256((__m256i_u*) (ptr - 7));
-
-                d = sigma0(b);
-                b = _mm256_add_epi32(d, c);
-                c = _mm256_add_epi32(a, b); // have to correct last value;
-
-                _mm256_storeu_si256((__m256i_u*) ptr, c);
-
-                ptr[0] += sigma1(ptr[-2]);
-                ptr[2] += sigma1(ptr[0]);
-                ptr[4] += sigma1(ptr[2]);
-                ptr[6] += sigma1(ptr[4]);
-
-                ptr[1] += sigma1(ptr[-1]);
-                ptr[3] += sigma1(ptr[1]);
-                ptr[5] += sigma1(ptr[3]);
-                ptr[7] += sigma1(ptr[5]) + ptr[0];
-
-                // LLVM_MCA_END
-            }
-
-#ifdef DEBUG
-            std::cout << "MESSAGE SCHEDULE ARRAY \n" << std::setfill('0') << std::hex;
-            for (std::size_t i = 0; i < rounds_per_chunk; ++i)
-            {
-                std::cout << std::bitset<32>{ msg_schedule_arr[i] } << "\n";
-                // std::cout << std::setw(8) << msg_schedule_arr[i] << "\n";
-            }
-            std::cout << "\n" << std::setfill(' ') << std::dec;
-#endif
-            // set rotatable temp hashes
-            // 0 1 2 3 4 5 6 7
-            // a b c d e f g h
-
-            word s1, s2, ch, maj;
-            word hash_buffer[8 + rounds_per_chunk];
-            word* temp_hash = hash_buffer + rounds_per_chunk;
-            std::memcpy(temp_hash, hash_data, 8 * sizeof(word));
-
-            for (std::size_t i = 0; i < rounds_per_chunk; ++i, --temp_hash)
-            {
-                s1 = rotr(temp_hash[4], 6) ^ rotr(temp_hash[4], 11) ^ rotr(temp_hash[4], 25);
-                ch = (temp_hash[4] & temp_hash[5]) ^ (~temp_hash[4] & temp_hash[6]);
-                temp0_ = temp_hash[7] + s1 + ch + round_values[i] + msg_schedule_arr[i];
-                s2 = rotr(temp_hash[0], 2) ^ rotr(temp_hash[0], 13) ^ rotr(temp_hash[0], 22);
-                maj = (temp_hash[0] & temp_hash[1]) ^ (temp_hash[0] & temp_hash[2]) ^ (temp_hash[1] & temp_hash[2]);
-                temp1_ = s2 + maj;
-
-                temp_hash[-1] = temp0_ + temp1_;
-                temp_hash[3] += temp0_;
-
-#ifdef DEBUG
-                std::cout << "SCHEDULE\n";
-                std::cout << std::hex << std::setfill('0');
-                for (std::size_t w = 0; w < 8; ++w)
-                {
-                    std::cout << std::setw(8) << temp_hash[w-1] << " ";
-                }
-                std::cout << "\n\t" << "temp0_ = " << std::bitset<32>{ temp0_ } << " | temp1_ = " << std::bitset<32>{ temp1_ } << "\n";
-
-                std::cout << std::dec << std::setfill(' ');
-#endif
-            }
-
-            for (std::size_t i = 0; i < 8; ++i)
-            {
-                hash_data[i] += temp_hash[i];
-            }
-        }
-
-        // flip back if necessary
-        for (std::size_t i = 0; i < 8; ++i)
-        {
-            hash_data[i] = to_big_endian(hash_data[i]);
-        }
-
-        delete[] blks;
-        return { hash_data };
-    }
-
     INLINE static __m128i sig0(__m128i input)
     {
         __m128i a = _mm_srli_epi32(input, 7);
@@ -326,7 +185,7 @@ namespace _details
         return _mm_xor_si128(c, b);
     }
 
-    [[nodiscard]] Hash<256> new_simd_sha256(const char* input)
+    [[nodiscard]] Hash<256> simd_sha256(const char* input)
     {
         using word = std::uint32_t;
 
@@ -335,13 +194,7 @@ namespace _details
         constexpr std::size_t rounds_per_chunk = 64;
         constexpr word round_values[64]{ 
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-            0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-            0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-            0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-            0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-            0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-            0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174
         };
 
         word hash_data[8]{ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
@@ -387,12 +240,30 @@ namespace _details
             __m128i M0;
             __m128i S0, S1;
             __m128i ZERO = _mm_setzero_si128();
+            __m128i SUM;
 
             // round 16 - 19
             MSG0 = _mm_loadu_si128((const __m128i_u*) msg_schedule_arr);            // W[t - 16]
             MSG1 = _mm_loadu_si128((const __m128i_u*) (msg_schedule_arr + 4));      // W[t - 12]
             MSG2 = _mm_loadu_si128((const __m128i_u*) (msg_schedule_arr + 8));      // W[t - 8]
             MSG3 = _mm_loadu_si128((const __m128i_u*) (msg_schedule_arr + 12));     // W[t - 4]
+
+            word sums[4];
+
+#define DIGEST()                                                                                            \
+_mm_storeu_si128((__m128i_u*) sums, SUM);                                                                   \
+for (std::size_t i = 0; i < 4; ++i, --temp_hash)                                                            \
+{                                                                                                           \
+    s1 = rotr(temp_hash[4], 6) ^ rotr(temp_hash[4], 11) ^ rotr(temp_hash[4], 25);                           \
+    ch = (temp_hash[4] & temp_hash[5]) ^ (~temp_hash[4] & temp_hash[6]);                                    \
+    temp0_ = temp_hash[7] + s1 + ch + sums[i];                                                              \
+    s2 = rotr(temp_hash[0], 2) ^ rotr(temp_hash[0], 13) ^ rotr(temp_hash[0], 22);                           \
+    maj = (temp_hash[0] & temp_hash[1]) ^ (temp_hash[0] & temp_hash[2]) ^ (temp_hash[1] & temp_hash[2]);    \
+    temp1_ = s2 + maj;                                                                                      \
+                                                                                                            \
+    temp_hash[-1] = temp0_ + temp1_;                                                                        \
+    temp_hash[3] += temp0_;                                                                                 \
+}
 
             M0 = _mm_alignr_epi8(ZERO, MSG3, 8);    // W[t - 2]
             W15 = _mm_alignr_epi8(MSG1, MSG0, 4);   // W[t - 15]
@@ -405,6 +276,9 @@ namespace _details
             S1 = sig1(MSG0);
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG0 = _mm_add_epi32(MSG0, S1); // W16 - W19
+
+            SUM = _mm_add_epi32(MSG0, _mm_set_epi32(0x240ca1cc, 0x0fc19dc6, 0xefbe4786, 0xe49b69c1));
+            DIGEST();
 
             // round 20 - 23
             M0 = _mm_alignr_epi8(ZERO, MSG0, 8);    // W[t - 2]
@@ -419,6 +293,8 @@ namespace _details
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG1 = _mm_add_epi32(MSG1, S1);
 
+            SUM = _mm_add_epi32(MSG1, _mm_set_epi32(0x76f988da, 0x5cb0a9dc, 0x4a7484aa, 0x2de92c6f));
+            DIGEST();
 
             // round 24 - 27
             M0 = _mm_alignr_epi8(ZERO, MSG1, 8);    // W[t - 2]
@@ -432,6 +308,9 @@ namespace _details
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG2 = _mm_add_epi32(MSG2, S1);
 
+            SUM = _mm_add_epi32(MSG2, _mm_set_epi32(0xbf597fc7, 0xb00327c8, 0xa831c66d, 0x983e5152));
+            DIGEST();
+
             // round 28 - 31
             M0 = _mm_alignr_epi8(ZERO, MSG2, 8);    // W[t - 2]
             W11 = _mm_alignr_epi8(MSG2, MSG1, 4);   // W[t - 7]
@@ -443,6 +322,9 @@ namespace _details
             S1 = sig1(MSG3);
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG3 = _mm_add_epi32(MSG3, S1);
+
+            SUM = _mm_add_epi32(MSG3, _mm_set_epi32(0x14292967, 0x06ca6351, 0xd5a79147, 0xc6e00bf3));
+            DIGEST();
 
             // round 32 - 35
             M0 = _mm_alignr_epi8(ZERO, MSG3, 8);    // W[t - 2]
@@ -456,6 +338,9 @@ namespace _details
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG0 = _mm_add_epi32(MSG0, S1);
 
+            SUM = _mm_add_epi32(MSG0, _mm_set_epi32(0x53380d13, 0x4d2c6dfc, 0x2e1b2138, 0x27b70a85));
+            DIGEST();
+
             // round 36 - 39
             M0 = _mm_alignr_epi8(ZERO, MSG0, 8);    // W[t - 2]
             W3 = _mm_alignr_epi8(MSG0, MSG3, 4);    // W[t - 7]
@@ -467,6 +352,9 @@ namespace _details
             S1 = sig1(MSG1);
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG1 = _mm_add_epi32(MSG1, S1);
+
+            SUM = _mm_add_epi32(MSG1, _mm_set_epi32(0x92722c85, 0x81c2c92e, 0x766a0abb, 0x650a7354));
+            DIGEST();
 
             // round 40 - 43
             M0 = _mm_alignr_epi8(ZERO, MSG1, 8);    // W[t - 2]
@@ -480,6 +368,9 @@ namespace _details
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG2 = _mm_add_epi32(MSG2, S1);
 
+            SUM = _mm_add_epi32(MSG2, _mm_set_epi32(0xc76c51a3, 0xc24b8b70, 0xa81a664b, 0xa2bfe8a1));
+            DIGEST();
+
             // round 44 - 47
             M0 = _mm_alignr_epi8(ZERO, MSG2, 8);    // W[t - 2]
             W11 = _mm_alignr_epi8(MSG2, MSG1, 4);   // W[t - 7]
@@ -491,6 +382,9 @@ namespace _details
             S1 = sig1(MSG3);
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG3 = _mm_add_epi32(MSG3, S1);
+
+            SUM = _mm_add_epi32(MSG3, _mm_set_epi32(0x106aa070, 0xf40e3585, 0xd6990624, 0xd192e819));
+            DIGEST();
 
             // round 48 - 51
             M0 = _mm_alignr_epi8(ZERO, MSG3, 8);    // W[t - 2]
@@ -504,6 +398,9 @@ namespace _details
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG0 = _mm_add_epi32(MSG0, S1);
 
+            SUM = _mm_add_epi32(MSG0, _mm_set_epi32(0x34b0bcb5, 0x2748774c, 0x1e376c08, 0x19a4c116));
+            DIGEST();
+
             // round 52 - 55
             M0 = _mm_alignr_epi8(ZERO, MSG0, 8);    // W[t - 2]
             W3 = _mm_alignr_epi8(MSG0, MSG3, 4);    // W[t - 7]
@@ -515,6 +412,9 @@ namespace _details
             S1 = sig1(MSG1);
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG1 = _mm_add_epi32(MSG1, S1);
+
+            SUM = _mm_add_epi32(MSG1, _mm_set_epi32(0x682e6ff3, 0x5b9cca4f, 0x4ed8aa4a, 0x391c0cb3));
+            DIGEST();
 
             // round 56 - 59
             M0 = _mm_alignr_epi8(ZERO, MSG1, 8);    // W[t - 2]
@@ -528,6 +428,9 @@ namespace _details
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG2 = _mm_add_epi32(MSG2, S1);
 
+            SUM = _mm_add_epi32(MSG2, _mm_set_epi32(0x8cc70208, 0x84c87814, 0x78a5636f, 0x748f82ee));
+            DIGEST();
+
             // round 60 - 63
             M0 = _mm_alignr_epi8(ZERO, MSG2, 8);    // W[t - 2]
             W11 = _mm_alignr_epi8(MSG2, MSG1, 4);   // W[t - 7]
@@ -540,46 +443,8 @@ namespace _details
             S1 = _mm_unpacklo_epi64(ZERO, S1);
             MSG3 = _mm_add_epi32(MSG3, S1);
 
-#ifdef DEBUG
-            word __temp[4];
-            _mm_storeu_si128((__m128i_u*) __temp, MSG3);
-            std::cout << std::hex << std::setfill('0');
-            for (std::size_t i = 0; i < 4; ++i) {
-                std::cout << std::bitset<32>{ __temp[i] } << " "; 
-                // std::cout << std::setw(8) << __temp[i] << " ";
-            }
-            std::cout << std::dec << std::setfill(' ') << "\n";
-#endif
-
-
-/*             MSG0 = _mm256_loadu_si256((__m256i_u*) msg_schedule_arr); // W[t - 16]
-            MSG1 = _mm256_loadu_si256((__m256i_u*) (msg_schedule_arr + 8)); // W[t - 8] used for round 24 - 31
-            W15 = _mm256_alignr_epi8(_mm256_permute2x128_si256(MSG0, MSG1, 0x21), MSG0, 4); // W[t - 15]
-            W7 = _mm256_alignr_epi8(_mm256_permute2x128_si256(MSG1, ZERO, 0x21), MSG1, 4); // W[t - 7]
-
-            TMP = sigma0(W15);
-            SUM = _mm256_add_epi32(TMP, W7);
-            MSG0 = _mm256_add_epi32(MSG0, SUM);
-
-            _mm256_storeu_si256((__m256i_u*) (msg_schedule_arr + 16), MSG0);
-            
-            msg_schedule_arr[24] += sigma1(msg_schedule_arr[22]);
-            msg_schedule_arr[26] += sigma1(msg_schedule_arr[24]);
-            msg_schedule_arr[28] += sigma1(msg_schedule_arr[26]);
-            msg_schedule_arr[30] += sigma1(msg_schedule_arr[28]);
-
-            msg_schedule_arr[25] += sigma1(msg_schedule_arr[23]);
-            msg_schedule_arr[27] += sigma1(msg_schedule_arr[25]);
-            msg_schedule_arr[29] += sigma1(msg_schedule_arr[27]);
-            msg_schedule_arr[31] += sigma1(msg_schedule_arr[29]) + msg_schedule_arr[0]; */
-/* 
-#ifdef DEBUG
-            word __temp[8];
-            _mm256_storeu_si256((__m256i_u*) __temp, W7);
-            std::cout << std::hex << std::setfill('0');
-            for (std::size_t i = 0; i < 8; ++i) std::cout << std::setw(8) << __temp[i] << " ";
-            std::cout << std::dec << std::setfill(' ') << "\n";
-#endif */
+            SUM = _mm_add_epi32(MSG3, _mm_set_epi32(0xc67178f2, 0xbef9a3f7, 0xa4506ceb, 0x90befffa));
+            DIGEST();
 
             for (std::size_t i = 0; i < 8; ++i)
             {
@@ -646,7 +511,7 @@ namespace _details
             CDGH = hash_CDGH;
             ABEF = hash_ABEF;
 
-            LLVM_MCA_BEGIN
+            // LLVM_MCA_BEGIN
 
             // round 0-3
             _msg0 = _mm_loadu_si128((__m128i_u*) ptr);
@@ -855,7 +720,7 @@ namespace _details
             hash_CDGH = _mm_add_epi32(hash_CDGH, CDGH);
             DEBUG_ABCDEFGH(hash_ABEF, hash_CDGH);
 
-            LLVM_MCA_END
+            // LLVM_MCA_END
         }
 
         hash_CDGH = _mm_shuffle_epi32(hash_CDGH, 0b00'01'10'11); // H G D C
@@ -893,7 +758,7 @@ namespace _details
 /* #ifdef __SHA__
     return _details::instruction_sha256(input); */
 #ifdef __AVX2__
-    return _details::new_simd_sha256(input);
+    return _details::simd_sha256(input);
 #else
     return _details::general_sha256(input);
 #endif

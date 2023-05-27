@@ -2,7 +2,7 @@
 
 #include <cstring>
 
-// #define DEBUG
+#define DEBUG
 
 #ifdef DEBUG
 #include <iomanip>
@@ -31,16 +31,18 @@ namespace _details
         std::uint64_t strbitsize = to_big_endian(8ul * strsize);
         std::memcpy(blks + *blk_total * BLOCK_BYTE_SIZE - sizeof(std::uint64_t), &strbitsize, sizeof(std::uint64_t));
 
-/* #ifdef DEBUG
+#ifdef DEBUG
         std::cout << "PADDED MESSAGE\n" << std::hex << std::setfill('0');
         for (std::size_t i = 0; i < *blk_total * 512 / 32; ++i)
         {
             uint32_t val;
             std::memcpy(&val, blks + i * 4, 4);
-            std::cout << std::bitset<32>{ val } << "\n";
+            // std::cout << std::bitset<32>{ val } << "\n";
+
+            std::cout << to_big_endian(val) << "\n";
         }
         std::cout << "\n" << std::dec << std::setfill(' ');
-#endif */
+#endif
 
         return blks;
     }
@@ -277,6 +279,116 @@ namespace _details
                 std::cout << std::dec << std::setfill(' ');
 #endif
             }
+
+            for (std::size_t i = 0; i < 8; ++i)
+            {
+                hash_data[i] += temp_hash[i];
+            }
+        }
+
+        // flip back if necessary
+        for (std::size_t i = 0; i < 8; ++i)
+        {
+            hash_data[i] = to_big_endian(hash_data[i]);
+        }
+
+        delete[] blks;
+        return { hash_data };
+    }
+
+    [[nodiscard]] Hash<256> new_simd_sha256(const char* input)
+    {
+        using word = std::uint32_t;
+
+        constexpr std::size_t bits_per_block = 512;
+        constexpr std::size_t bytes_per_block = bits_per_block / 8;
+        constexpr std::size_t rounds_per_chunk = 64;
+        constexpr word round_values[64]{ 
+            0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+            0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+            0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+            0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+            0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+            0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+            0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+            0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
+        };
+
+        word hash_data[8]{ 0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19 };
+
+        std::size_t blk_count;
+        std::uint8_t* blks = preprocess_sha256(input, &blk_count);
+
+        for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx)
+        {
+            word temp0_, temp1_;
+            word msg_schedule_arr[64]{};
+            for (std::size_t i = 0; i < 16; ++i) 
+            {
+                std::memcpy(&temp0_, blks + chunk_idx * bytes_per_block + i * sizeof(word), sizeof(word));
+                msg_schedule_arr[i] = to_big_endian(temp0_);
+            }
+
+            // set rotatable temp hashes
+            // 0 1 2 3 4 5 6 7
+            // a b c d e f g h
+
+            word s1, s2, ch, maj;
+            word hash_buffer[8 + rounds_per_chunk];
+            word* temp_hash = hash_buffer + rounds_per_chunk;
+            std::memcpy(temp_hash, hash_data, 8 * sizeof(word));
+
+            // round 0 - 15
+            for (std::size_t i = 0; i < 16; ++i, --temp_hash)
+            {
+                s1 = rotr(temp_hash[4], 6) ^ rotr(temp_hash[4], 11) ^ rotr(temp_hash[4], 25);
+                ch = (temp_hash[4] & temp_hash[5]) ^ (~temp_hash[4] & temp_hash[6]);
+                temp0_ = temp_hash[7] + s1 + ch + round_values[i] + msg_schedule_arr[i];
+                s2 = rotr(temp_hash[0], 2) ^ rotr(temp_hash[0], 13) ^ rotr(temp_hash[0], 22);
+                maj = (temp_hash[0] & temp_hash[1]) ^ (temp_hash[0] & temp_hash[2]) ^ (temp_hash[1] & temp_hash[2]);
+                temp1_ = s2 + maj;
+
+                temp_hash[-1] = temp0_ + temp1_;
+                temp_hash[3] += temp0_;
+            }
+
+            __m256i MSG0, MSG1, TMP, W15, W7, SUM;
+            const __m256i ZERO = _mm256_setzero_si256();
+
+            // vector concatenation see: https://stackoverflow.com/questions/45245732/how-to-concatenate-two-vector-efficiently-using-avx2-a-lane-crossing-version-o
+
+            // round 16 - 23
+            MSG0 = _mm256_loadu_si256((__m256i_u*) msg_schedule_arr); // W[t - 16]
+            MSG1 = _mm256_loadu_si256((__m256i_u*) (msg_schedule_arr + 8)); // W[t - 8] used for round 24 - 31
+            W15 = _mm256_alignr_epi8(_mm256_permute2x128_si256(MSG0, MSG1, 0x21), MSG0, 4); // W[t - 15]
+            W7 = _mm256_alignr_epi8(_mm256_permute2x128_si256(MSG1, ZERO, 0x21), MSG1, 4); // W[t - 7]
+
+            TMP = sigma0(W15);
+            SUM = _mm256_add_epi32(TMP, W7);
+            MSG0 = _mm256_add_epi32(MSG0, SUM);
+
+            _mm256_storeu_si256((__m256i_u*) (msg_schedule_arr + 16), MSG0);
+            
+            msg_schedule_arr[24] += sigma1(msg_schedule_arr[22]);
+            msg_schedule_arr[26] += sigma1(msg_schedule_arr[24]);
+            msg_schedule_arr[28] += sigma1(msg_schedule_arr[26]);
+            msg_schedule_arr[30] += sigma1(msg_schedule_arr[28]);
+
+            msg_schedule_arr[25] += sigma1(msg_schedule_arr[23]);
+            msg_schedule_arr[27] += sigma1(msg_schedule_arr[25]);
+            msg_schedule_arr[29] += sigma1(msg_schedule_arr[27]);
+            msg_schedule_arr[31] += sigma1(msg_schedule_arr[29]) + msg_schedule_arr[0];
+
+            // round 24 - 31
+            MSG1
+
+#ifdef DEBUG
+            word __temp[8];
+            _mm256_storeu_si256((__m256i_u*) __temp, W7);
+            std::cout << std::hex << std::setfill('0');
+            for (std::size_t i = 0; i < 8; ++i) std::cout << std::setw(8) << __temp[i] << " ";
+            std::cout << std::dec << std::setfill(' ') << "\n";
+#endif
 
             for (std::size_t i = 0; i < 8; ++i)
             {
@@ -587,10 +699,10 @@ namespace _details
 
 [[nodiscard]] Hash<256> sha256(const char* input)
 {
-#ifdef __SHA__
-    return _details::instruction_sha256(input);
-#elif __AVX2__
-    return _details::simd_sha256(input);
+/* #ifdef __SHA__
+    return _details::instruction_sha256(input); */
+#ifdef __AVX2__
+    return _details::new_simd_sha256(input);
 #else
     return _details::general_sha256(input);
 #endif

@@ -34,6 +34,14 @@ Continued working the SHA intrinsics version of SHA256. Did not make any real pr
 
 Finally completed SHA intrinsics verson of SHA256 as found in [SHA256.cpp](src/SHA256.cpp). Also performed tests and profiled the code. 
 
+### 5/26/2023
+
+Began planning pseudocode for new SIMD algorithm implementation of SHA256 and SHA224.
+
+### 5/27/2023
+
+Implemented new faster SIMD algorithm for SHA256/224 in [SHA256.cpp](src/SHA256.cpp) and [SHA224.cpp](src/SHA224.cpp). Sees around 10% to 25% speed increase over the serial implementation.
+
 ## GROUP MEMBER 2
 
 ### date x

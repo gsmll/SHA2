@@ -296,6 +296,36 @@ namespace _details
         return { hash_data };
     }
 
+    INLINE static __m128i sig0(__m128i input)
+    {
+        __m128i a = _mm_srli_epi32(input, 7);
+        __m128i b = _mm_srli_epi32(input, 18);
+        __m128i c = _mm_srli_epi32(input, 3);
+
+        __m128i d = _mm_slli_epi32(input, 25);
+        __m128i e = _mm_slli_epi32(input, 14);
+
+        a = _mm_or_si128(a, d);
+        b = _mm_or_si128(b, e);
+        c = _mm_xor_si128(a, c);
+        return _mm_xor_si128(c, b);
+    }
+
+    INLINE static __m128i sig1(__m128i input)
+    {
+        __m128i a = _mm_srli_epi32(input, 17);
+        __m128i b = _mm_srli_epi32(input, 19);
+        __m128i c = _mm_srli_epi32(input, 10);
+
+        __m128i d = _mm_slli_epi32(input, 15);
+        __m128i e = _mm_slli_epi32(input, 13);
+
+        a = _mm_or_si128(a, d);
+        b = _mm_or_si128(b, e);
+        c = _mm_xor_si128(a, c);
+        return _mm_xor_si128(c, b);
+    }
+
     [[nodiscard]] Hash<256> new_simd_sha256(const char* input)
     {
         using word = std::uint32_t;
@@ -352,13 +382,177 @@ namespace _details
                 temp_hash[3] += temp0_;
             }
 
-            __m256i MSG0, MSG1, TMP, W15, W7, SUM;
-            const __m256i ZERO = _mm256_setzero_si256();
+            __m128i MSG0, MSG1, MSG2, MSG3;
+            __m128i W7, W15, W3, W11;
+            __m128i M0;
+            __m128i S0, S1;
+            __m128i ZERO = _mm_setzero_si128();
 
-            // vector concatenation see: https://stackoverflow.com/questions/45245732/how-to-concatenate-two-vector-efficiently-using-avx2-a-lane-crossing-version-o
+            // round 16 - 19
+            MSG0 = _mm_loadu_si128((const __m128i_u*) msg_schedule_arr);            // W[t - 16]
+            MSG1 = _mm_loadu_si128((const __m128i_u*) (msg_schedule_arr + 4));      // W[t - 12]
+            MSG2 = _mm_loadu_si128((const __m128i_u*) (msg_schedule_arr + 8));      // W[t - 8]
+            MSG3 = _mm_loadu_si128((const __m128i_u*) (msg_schedule_arr + 12));     // W[t - 4]
 
-            // round 16 - 23
-            MSG0 = _mm256_loadu_si256((__m256i_u*) msg_schedule_arr); // W[t - 16]
+            M0 = _mm_alignr_epi8(ZERO, MSG3, 8);    // W[t - 2]
+            W15 = _mm_alignr_epi8(MSG1, MSG0, 4);   // W[t - 15]
+            W7 = _mm_alignr_epi8(MSG3, MSG2, 4);    // W[t - 7]
+            S0 = sig0(W15);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG0);
+            S1 = _mm_add_epi32(S1, W7);
+            MSG0 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG0);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG0 = _mm_add_epi32(MSG0, S1); // W16 - W19
+
+            // round 20 - 23
+            M0 = _mm_alignr_epi8(ZERO, MSG0, 8);    // W[t - 2]
+            W11 = _mm_alignr_epi8(MSG2, MSG1, 4);   // W[t - 15]
+            W3 = _mm_alignr_epi8(MSG0, MSG3, 4);    // W[t - 7]
+            S0 = sig0(W11);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG1);
+            S1 = _mm_add_epi32(S1, W3);
+            MSG1 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG1);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG1 = _mm_add_epi32(MSG1, S1);
+
+
+            // round 24 - 27
+            M0 = _mm_alignr_epi8(ZERO, MSG1, 8);    // W[t - 2]
+            W15 = _mm_alignr_epi8(MSG1, MSG0, 4);   // W[t - 7]
+            S0 = sig0(W7);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG2);
+            S1 = _mm_add_epi32(S1, W15);
+            MSG2 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG2);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG2 = _mm_add_epi32(MSG2, S1);
+
+            // round 28 - 31
+            M0 = _mm_alignr_epi8(ZERO, MSG2, 8);    // W[t - 2]
+            W11 = _mm_alignr_epi8(MSG2, MSG1, 4);   // W[t - 7]
+            S0 = sig0(W3);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG3);
+            S1 = _mm_add_epi32(S1, W11);
+            MSG3 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG3);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG3 = _mm_add_epi32(MSG3, S1);
+
+            // round 32 - 35
+            M0 = _mm_alignr_epi8(ZERO, MSG3, 8);    // W[t - 2]
+            W7 = _mm_alignr_epi8(MSG3, MSG2, 4);    // W[t - 7]
+            S0 = sig0(W15);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG0);
+            S1 = _mm_add_epi32(S1, W7);
+            MSG0 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG0);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG0 = _mm_add_epi32(MSG0, S1);
+
+            // round 36 - 39
+            M0 = _mm_alignr_epi8(ZERO, MSG0, 8);    // W[t - 2]
+            W3 = _mm_alignr_epi8(MSG0, MSG3, 4);    // W[t - 7]
+            S0 = sig0(W11);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG1);
+            S1 = _mm_add_epi32(S1, W3);
+            MSG1 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG1);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG1 = _mm_add_epi32(MSG1, S1);
+
+            // round 40 - 43
+            M0 = _mm_alignr_epi8(ZERO, MSG1, 8);    // W[t - 2]
+            W15 = _mm_alignr_epi8(MSG1, MSG0, 4);   // W[t - 7]
+            S0 = sig0(W7);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG2);
+            S1 = _mm_add_epi32(S1, W15);
+            MSG2 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG2);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG2 = _mm_add_epi32(MSG2, S1);
+
+            // round 44 - 47
+            M0 = _mm_alignr_epi8(ZERO, MSG2, 8);    // W[t - 2]
+            W11 = _mm_alignr_epi8(MSG2, MSG1, 4);   // W[t - 7]
+            S0 = sig0(W3);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG3);
+            S1 = _mm_add_epi32(S1, W11);
+            MSG3 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG3);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG3 = _mm_add_epi32(MSG3, S1);
+
+            // round 48 - 51
+            M0 = _mm_alignr_epi8(ZERO, MSG3, 8);    // W[t - 2]
+            W7 = _mm_alignr_epi8(MSG3, MSG2, 4);    // W[t - 7]
+            S0 = sig0(W15);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG0);
+            S1 = _mm_add_epi32(S1, W7);
+            MSG0 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG0);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG0 = _mm_add_epi32(MSG0, S1);
+
+            // round 52 - 55
+            M0 = _mm_alignr_epi8(ZERO, MSG0, 8);    // W[t - 2]
+            W3 = _mm_alignr_epi8(MSG0, MSG3, 4);    // W[t - 7]
+            S0 = sig0(W11);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG1);
+            S1 = _mm_add_epi32(S1, W3);
+            MSG1 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG1);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG1 = _mm_add_epi32(MSG1, S1);
+
+            // round 56 - 59
+            M0 = _mm_alignr_epi8(ZERO, MSG1, 8);    // W[t - 2]
+            W15 = _mm_alignr_epi8(MSG1, MSG0, 4);   // W[t - 7]
+            S0 = sig0(W7);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG2);
+            S1 = _mm_add_epi32(S1, W15);
+            MSG2 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG2);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG2 = _mm_add_epi32(MSG2, S1);
+
+            // round 60 - 63
+            M0 = _mm_alignr_epi8(ZERO, MSG2, 8);    // W[t - 2]
+            W11 = _mm_alignr_epi8(MSG2, MSG1, 4);   // W[t - 7]
+            S0 = sig0(W3);
+            S1 = sig1(M0);
+            S0 = _mm_add_epi32(S0, MSG3);
+            S1 = _mm_add_epi32(S1, W11);
+            MSG3 = _mm_add_epi32(S0, S1);
+            S1 = sig1(MSG3);
+            S1 = _mm_unpacklo_epi64(ZERO, S1);
+            MSG3 = _mm_add_epi32(MSG3, S1);
+
+#ifdef DEBUG
+            word __temp[4];
+            _mm_storeu_si128((__m128i_u*) __temp, MSG3);
+            std::cout << std::hex << std::setfill('0');
+            for (std::size_t i = 0; i < 4; ++i) {
+                std::cout << std::bitset<32>{ __temp[i] } << " "; 
+                // std::cout << std::setw(8) << __temp[i] << " ";
+            }
+            std::cout << std::dec << std::setfill(' ') << "\n";
+#endif
+
+
+/*             MSG0 = _mm256_loadu_si256((__m256i_u*) msg_schedule_arr); // W[t - 16]
             MSG1 = _mm256_loadu_si256((__m256i_u*) (msg_schedule_arr + 8)); // W[t - 8] used for round 24 - 31
             W15 = _mm256_alignr_epi8(_mm256_permute2x128_si256(MSG0, MSG1, 0x21), MSG0, 4); // W[t - 15]
             W7 = _mm256_alignr_epi8(_mm256_permute2x128_si256(MSG1, ZERO, 0x21), MSG1, 4); // W[t - 7]
@@ -377,18 +571,15 @@ namespace _details
             msg_schedule_arr[25] += sigma1(msg_schedule_arr[23]);
             msg_schedule_arr[27] += sigma1(msg_schedule_arr[25]);
             msg_schedule_arr[29] += sigma1(msg_schedule_arr[27]);
-            msg_schedule_arr[31] += sigma1(msg_schedule_arr[29]) + msg_schedule_arr[0];
-
-            // round 24 - 31
-            MSG1
-
+            msg_schedule_arr[31] += sigma1(msg_schedule_arr[29]) + msg_schedule_arr[0]; */
+/* 
 #ifdef DEBUG
             word __temp[8];
             _mm256_storeu_si256((__m256i_u*) __temp, W7);
             std::cout << std::hex << std::setfill('0');
             for (std::size_t i = 0; i < 8; ++i) std::cout << std::setw(8) << __temp[i] << " ";
             std::cout << std::dec << std::setfill(' ') << "\n";
-#endif
+#endif */
 
             for (std::size_t i = 0; i < 8; ++i)
             {

@@ -42,6 +42,10 @@ Began planning pseudocode for new SIMD algorithm implementation of SHA256 and SH
 
 Implemented new faster SIMD algorithm for SHA256/224 in [SHA256.cpp](src/SHA256.cpp) and [SHA224.cpp](src/SHA224.cpp). Sees around 10% to 25% speed increase over the serial implementation.
 
+### 5/28/2023
+
+Implemented minor quality of life command line argument options in [ArgumentParser.cpp](src/shashaker/ArgumentParser.cpp). Started generalizing hash cracker in [Process.cpp](src/shashaker/Process.cpp).
+
 ## GROUP MEMBER 2
 
 ### date x

@@ -150,11 +150,8 @@ namespace _details
         delete[] blks;
         return { hash_data };
 }}
+
 [[nodiscard]] Hash<384> sha384(const char* input)
 {
-/* #elif __AVX2__
-    return _details::simd_sha384(input);
-#else */
     return _details::general_sha384(input);
-//#endif
 }

@@ -16,7 +16,6 @@ namespace _details
 
         std::size_t strsize = std::strlen(input);
         *blk_total = (strsize + 16 + 1) / 128 + ( (strsize + 16 + 1) % 128 ? 1 : 0 );
-       std:: cout << blk_total << "\n";
         std::uint8_t* blks = new std::uint8_t[BLOCK_BYTE_SIZE * *blk_total]{ }; // paren important        
         std::memcpy(blks, input, strsize);
         blks[strsize] |= 1 << 7;
@@ -63,9 +62,8 @@ namespace _details
 
         word hash_data[8]{ 0x6a09e667f3bcc908, 0xbb67ae8584caa73b, 0x3c6ef372fe94f82b, 0xa54ff53a5f1d36f1, 
            0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179 };
-           std::size_t blk_count;
+        std::size_t blk_count;
         std::uint8_t* blks = preprocess_sha512(input, &blk_count);
-        std::cout << blk_count<< "\n";
         for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx)
         {
             word temp0_, temp1_;

@@ -2,6 +2,7 @@
 #include <fstream>
 #include <regex>
 #include <vector>
+#include <thread>
 
 #include "Hash.hpp"
 #include "hash/SHA.hpp"
@@ -10,7 +11,7 @@
 
 using namespace std;
 
-constexpr int DEFAULT_THREAD_COUNT = 4;
+constexpr int DEFAULT_THREAD_COUNT = 1;
 
 // ./Shaker --format sha512 --wordlist rockyou.txt --hash hash.txt --thread 4
 // ./Shaker -f sha256 -w rockyou.txt -t 20 -h hash.txt
@@ -25,9 +26,9 @@ int main(int argc, const char** argv)
     const char* wordlist = nullptr;
     const char* hashlist = nullptr;
     const char* sha_type = nullptr;
-    const char* thread_count_str = nullptr;
+    // const char* thread_count_str = nullptr;
     int sha_num = 256;
-    int thread_count = DEFAULT_THREAD_COUNT;
+    // int thread_count = DEFAULT_THREAD_COUNT;
 
     if ((wordlist = option_parser.get_option_argument("-w")))
     {
@@ -84,7 +85,7 @@ int main(int argc, const char** argv)
         sha_num = std::stoi(std::string{ sha_type + 3 });
     }
 
-    if ((thread_count_str = option_parser.get_option_argument("-t")))
+/*     if ((thread_count_str = option_parser.get_option_argument("-t")))
     {
         if (!std::regex_match(thread_count_str, numeric_regex))
         {
@@ -92,7 +93,14 @@ int main(int argc, const char** argv)
             return 1;
         }
 
-        thread_count = std::stoi(std::string{ thread_count_str });
+        if (std::strcmp(thread_count_str, "max") == 0)
+        {
+            thread_count = std::thread::hardware_concurrency();
+        }
+        else
+        {
+            thread_count = std::stoi(std::string{ thread_count_str });
+        }
     }
     else if ((thread_count_str = option_parser.get_option_argument("--thread")))
     {
@@ -103,7 +111,7 @@ int main(int argc, const char** argv)
         }
 
         thread_count = std::stoi(std::string{ thread_count_str });
-    }
+    } */
 
     if (!wordlist)
     {
@@ -117,10 +125,11 @@ int main(int argc, const char** argv)
         return 1;
     }
 
-    std::cout << "WORDLIST FILE = " << wordlist << "\n";
-    std::cout << "HASH FILE = " << hashlist << "\n";
-    std::cout << "HASH TYPE = SHA" << sha_num << "\n";
-    std::cout << "THREADS = " << thread_count << "\n";
+    std::cout << "Launching Shaker...\n";
+    std::cout << "Attempting to crack hashes in " << hashlist << "\n";
+    std::cout << "With word list in " << wordlist << "\n";
+    std::cout << "Using SHA" << sha_num << "\n\n";
+    // std::cout << "Using " << thread_count << " threads\n\n";
 
     std::ifstream wordlist_file{ wordlist };
     std::ifstream hashlist_file{ hashlist };
@@ -141,22 +150,30 @@ int main(int argc, const char** argv)
     {
         case 224: 
         {
-            multithread_sha224_cracker(wordlist_file, hashlist_file, thread_count);
+            /* if (thread_count > 1) multithread_sha224_cracker(wordlist_file, hashlist_file, thread_count);
+            else  */
+            hash_crack_sha224(hashlist_file, wordlist_file);
             break;
         }
         case 256:
         {
-            multithread_sha256_cracker(wordlist_file, hashlist_file, thread_count);
+            /* if (thread_count > 1) multithread_sha256_cracker(wordlist_file, hashlist_file, thread_count);
+            else */ 
+            hash_crack_sha256(hashlist_file, wordlist_file);
             break;
         }
         case 384:
         {
-            multithread_sha384_cracker(wordlist_file, hashlist_file, thread_count);
+            /* if (thread_count > 1) multithread_sha384_cracker(wordlist_file, hashlist_file, thread_count);
+            else  */
+            hash_crack_sha512(hashlist_file, wordlist_file);
             break;
         }
         case 512:
         {
-            multithread_sha512_cracker(wordlist_file, hashlist_file, thread_count);
+            /* if (thread_count > 1) multithread_sha512_cracker(wordlist_file, hashlist_file, thread_count);
+            else  */
+            hash_crack_sha384(hashlist_file, wordlist_file);
             break;
         }
         default:

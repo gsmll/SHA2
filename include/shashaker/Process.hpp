@@ -60,23 +60,23 @@ void hash_crack_sha384(std::ifstream& hash_file, std::ifstream& word_file);
 
 void chunk_scheduler(std::ifstream& word_file, Queue<Chunk>& scheduler, std::size_t thread_count, std::atomic<bool>& eoh_flag);
 
-void process_sha256_chunk(List<Hash<256>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag);
+void process_sha256_chunk(List<Hash<256>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag, std::atomic<unsigned int>& hashes_caught);
 
-void process_sha224_chunk(List<Hash<224>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag);
+void process_sha224_chunk(List<Hash<224>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag, std::atomic<unsigned int>& hashes_caught);
 
-void process_sha512_chunk(List<Hash<512>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag);
+void process_sha512_chunk(List<Hash<512>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag, std::atomic<unsigned int>& hashes_caught);
 
-void process_sha384_chunk(List<Hash<384>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag);
+void process_sha384_chunk(List<Hash<384>>& hashes, std::vector<std::string>& word_chunk, std::atomic<bool>& eoh_flag, std::atomic<unsigned int>& hashes_caught);
 
 void scheduling_worker_thread(std::ifstream& word_file, Queue<Chunk>& scheduler, std::size_t thread_count, std::atomic<bool>& eos_flag, std::atomic<bool>& eoh_flag);
 
-void cracking_sha256_worker_thread(List<Hash<256>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh);
+void cracking_sha256_worker_thread(List<Hash<256>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh, std::atomic<unsigned int>& hashes_caught);
 
-void cracking_sha224_worker_thread(List<Hash<224>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh);
+void cracking_sha224_worker_thread(List<Hash<224>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh, std::atomic<unsigned int>& hashes_caught);
 
-void cracking_sha512_worker_thread(List<Hash<512>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh);
+void cracking_sha512_worker_thread(List<Hash<512>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh, std::atomic<unsigned int>& hashes_caught);
 
-void cracking_sha384_worker_thread(List<Hash<384>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh);
+void cracking_sha384_worker_thread(List<Hash<384>>& hashes, Queue<Chunk>& scheduler, std::atomic<bool>& eos, std::atomic<bool>& eoh, std::atomic<unsigned int>& hashes_caught);
 
 void multithread_sha256_cracker(std::ifstream& word_file, std::ifstream& hash_file, std::size_t thread_count);
 

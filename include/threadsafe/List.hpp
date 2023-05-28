@@ -3,6 +3,7 @@
 
 #include <mutex>
 #include <condition_variable>
+#include <shared_mutex>
 #include <memory>
 
 /**
@@ -17,7 +18,7 @@ private:
 
     struct node
     {
-        std::mutex m;
+        mutable std::shared_mutex m;
         std::shared_ptr<T> data;
         std::unique_ptr<node> next;
 
@@ -27,6 +28,7 @@ private:
     };
 
     node head; // dummy head
+    std::size_t _size = 0;
 
 public:
 
@@ -52,6 +54,7 @@ public:
     template<typename Predicate>
     bool remove_first_if(Predicate&& predicate);
 
+    std::size_t size() const;
     bool empty() const;
 
 };
@@ -66,23 +69,25 @@ template<typename T>
 void List<T>::push_front(const T& value)
 {
     std::unique_ptr<node> new_head{ new node{ value } };
-    std::lock_guard lk{ head.m };
+    std::unique_lock lk{ head.m };
     new_head->next = std::move(head.next);
     head.next = std::move(new_head);
+    ++_size;
 }
 
 template<typename T>
 std::shared_ptr<T> List<T>::pop_front()
 {
-    std::lock_guard lk{ head.m };
+    std::unique_lock lk{ head.m };
     if (!head.next) return std::shared_ptr<T>{}; // return nullptr
     std::shared_ptr<T> res;
     std::shared_ptr<node> curr_head = std::move(head.next);
     {
-        std::lock_guard head_lk{ curr_head->m };
+        std::unique_lock head_lk{ curr_head->m };
         res = std::move(curr_head->data);    
         head.next = std::move(curr_head->next);
     }
+    --_size;
     return res;
 }
 
@@ -107,10 +112,10 @@ template<typename Predicate>
 std::shared_ptr<T> List<T>::find_first_if(Predicate&& predicate)
 {
     node* curr = &head;
-    std::unique_lock lk{ head.m };
+    std::shared_lock lk{ head.m };
     while (node* const next = curr->next.get())
     {
-        std::unique_lock next_lk{ next->m };
+        std::shared_lock next_lk{ next->m };
         lk.unlock();
         if (std::forward<Predicate>(predicate)(*next->data))
         {
@@ -136,6 +141,7 @@ void List<T>::remove_if(Predicate&& predicate)
             std::unique_ptr<node> old_head = std::move(curr->next);
             curr->next = std::move(next->next);
             next_lk.unlock();
+            --_size;
         }
         else
         {
@@ -160,6 +166,7 @@ bool List<T>::remove_first_if(Predicate&& predicate)
             std::unique_ptr<node> old_head = std::move(curr->next);
             curr->next = std::move(next->next);
             next_lk.unlock();
+            --_size;
             return true; // terminate early
         }
         else
@@ -173,9 +180,17 @@ bool List<T>::remove_first_if(Predicate&& predicate)
 }
 
 template<typename T>
+std::size_t List<T>::size() const 
+{
+    std::shared_lock lk{ head.m };
+    return _size;
+}
+
+template<typename T>
 bool List<T>::empty() const
 {
-    return head.next == nullptr;
+    std::shared_lock lk{ head.m };
+    return _size == 0;
 }
 
 #endif

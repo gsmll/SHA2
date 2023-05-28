@@ -22,6 +22,7 @@ private:
         std::unique_ptr<node> next;
 
         node() : next{} {}
+        node(node&& mv) : m{}, data{ std::move(mv.data) }, next{ std::move(mv.next) } {}
         node(const T& value) : data{ std::make_shared<T>(value) } {}
     };
 
@@ -39,6 +40,9 @@ public:
     void push_front(const T& value);
     std::shared_ptr<T> pop_front();
 
+    template<typename Function>
+    void for_each(Function&& func);
+
     template<typename Predicate>
     std::shared_ptr<T> find_first_if(Predicate&& predicate);
 
@@ -46,7 +50,9 @@ public:
     void remove_if(Predicate&& predicate);
 
     template<typename Predicate>
-    void remove_first_if(Predicate&& predicate);
+    bool remove_first_if(Predicate&& predicate);
+
+    bool empty() const;
 
 };
 
@@ -78,6 +84,22 @@ std::shared_ptr<T> List<T>::pop_front()
         head.next = std::move(curr_head->next);
     }
     return res;
+}
+
+template<typename T>
+template<typename Function>
+void List<T>::for_each(Function&& func)
+{
+    node* curr = &head;
+    std::unique_lock lk{ head.m };
+    while (node* const next = curr->next.get())
+    {
+        std::unique_lock next_lk{ next->m };
+        lk.unlock();
+        std::forward<Function>(func)(*next->data);
+        curr = next;
+        lk = std::move(next_lk);
+    }
 }
 
 template<typename T>
@@ -126,7 +148,7 @@ void List<T>::remove_if(Predicate&& predicate)
 
 template<typename T>
 template<typename Predicate>
-void List<T>::remove_first_if(Predicate&& predicate)
+bool List<T>::remove_first_if(Predicate&& predicate)
 {
     node* curr = &head;
     std::unique_lock lk{ head.m };
@@ -138,7 +160,7 @@ void List<T>::remove_first_if(Predicate&& predicate)
             std::unique_ptr<node> old_head = std::move(curr->next);
             curr->next = std::move(next->next);
             next_lk.unlock();
-            return; // terminate early
+            return true; // terminate early
         }
         else
         {
@@ -147,6 +169,13 @@ void List<T>::remove_first_if(Predicate&& predicate)
             lk = std::move(next_lk);
         }
     }
+    return false;
+}
+
+template<typename T>
+bool List<T>::empty() const
+{
+    return head.next == nullptr;
 }
 
 #endif

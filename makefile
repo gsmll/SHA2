@@ -13,7 +13,6 @@ main: $(BUILD)main
 	$(BUILD)main
 
 shaker: $(BUILD)Shaker
-	$(BUILD)Shaker
 
 profile: $(BUILD)profile
 	$(BUILD)profile

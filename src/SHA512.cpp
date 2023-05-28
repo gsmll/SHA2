@@ -153,12 +153,8 @@ namespace _details
         delete[] blks;
         return { hash_data };
 }}
+
 [[nodiscard]] Hash<512> sha512(const char* input)
 {
-
-/* #elif __AVX2__
-    return _details::simd_sha512(input);
-#else */
     return _details::general_sha512(input);
-// #endif
 }

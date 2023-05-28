@@ -192,7 +192,7 @@ namespace _details
         constexpr std::size_t bits_per_block = 512;
         constexpr std::size_t bytes_per_block = bits_per_block / 8;
         constexpr std::size_t rounds_per_chunk = 64;
-        constexpr word round_values[64]{ 
+        constexpr word round_values[]{ 
             0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
             0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174
         };
@@ -755,9 +755,9 @@ for (std::size_t i = 0; i < 4; ++i, --temp_hash)                                
 
 [[nodiscard]] Hash<256> sha256(const char* input)
 {
-/* #ifdef __SHA__
-    return _details::instruction_sha256(input); */
-#ifdef __AVX2__
+#ifdef __SHA__
+    return _details::instruction_sha256(input);
+#elif defined(__AVX2__)
     return _details::simd_sha256(input);
 #else
     return _details::general_sha256(input);

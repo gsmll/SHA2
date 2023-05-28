@@ -22,12 +22,13 @@ private:
     mutable std::mutex m;
     std::queue<T> data;
     std::condition_variable data_cond;
+    bool terminate_waits = false;
 public:
     Queue() = default;
     Queue(const Queue&) = delete;
     Queue(Queue&&) = default;
     Queue& operator=(const Queue&) = delete;
-    Queue& operator-(Queue&&) = default;
+    Queue& operator=(Queue&&) = default;
 
     void push(T value);
 
@@ -38,6 +39,9 @@ public:
     std::shared_ptr<T> try_pop();
 
     bool empty() const;
+    std::size_t size() const;
+
+    void terminate();
 };
 
 template<typename T>
@@ -52,19 +56,26 @@ template<typename T>
 void Queue<T>::wait_and_pop(T& value)
 {
     std::unique_lock lk{ m };
-    data_cond.wait(lk, [this](){ return !data.empty(); });
-    value = std::move(data.front());
-    data.pop();
+    data_cond.wait(lk, [this](){ return !data.empty() || terminate_waits; });
+    if (!terminate_waits)
+    {
+       value = std::move(data.front());
+        data.pop(); 
+    }
 }
 
 template<typename T>
 std::shared_ptr<T> Queue<T>::wait_and_pop()
 {
     std::unique_lock lk{ m };
-    data_cond.wait(lk, [this](){ return !data.empty(); });
-    std::shared_ptr<T> res{ std::make_shared<T>(std::move(data.front())) };
-    data.pop();
-    return res;
+    data_cond.wait(lk, [this](){ return !data.empty() || terminate_waits; });
+    if (!terminate_waits)
+    {
+        std::shared_ptr<T> res{ std::make_shared<T>(std::move(data.front())) };
+        data.pop();
+        return res;
+    }
+    return std::shared_ptr<T>{};
 }
 
 template<typename T>
@@ -92,6 +103,21 @@ bool Queue<T>::empty() const
 {
     std::lock_guard lk{ m };
     return data.empty();
+}
+
+template<typename T>
+std::size_t Queue<T>::size() const
+{
+    std::lock_guard lk{ m };
+    return data.size();
+}
+
+template<typename T>
+void Queue<T>::terminate()
+{
+    std::lock_guard lk{ m };
+    terminate_waits = true;
+    data_cond.notify_all();
 }
 
 #endif

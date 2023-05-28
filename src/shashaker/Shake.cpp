@@ -141,22 +141,22 @@ int main(int argc, const char** argv)
     {
         case 224: 
         {
-            hash_crack_sha224(hashlist_file, wordlist_file);
+            multithread_sha224_cracker(wordlist_file, hashlist_file, thread_count);
             break;
         }
         case 256:
         {
-            hash_crack_sha256(hashlist_file, wordlist_file);
+            multithread_sha256_cracker(wordlist_file, hashlist_file, thread_count);
             break;
         }
         case 384:
         {
-            hash_crack_sha384(hashlist_file, wordlist_file);
+            multithread_sha384_cracker(wordlist_file, hashlist_file, thread_count);
             break;
         }
         case 512:
         {
-            hash_crack_sha512(hashlist_file, wordlist_file);
+            multithread_sha512_cracker(wordlist_file, hashlist_file, thread_count);
             break;
         }
         default:

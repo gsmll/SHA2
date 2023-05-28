@@ -44,3 +44,75 @@ void hash_crack_sha256(std::ifstream& hash_file, std::ifstream& word_file)
         std::cout << "Could not crack " << hash << "\n";
     }
 }
+
+void hash_crack_sha224(std::ifstream& hash_file, std::ifstream& word_file)
+{
+    std::vector<Hash<224>> hashes = read_hash_file<224>(hash_file);
+    hash_file.close();
+
+    std::vector<std::string> words = read_word_file(word_file, 100);
+    Hash<224> word_hash;
+    for (std::string word : words)
+    {
+        word_hash = sha224(word.c_str());
+        auto res = std::find(std::begin(hashes), std::end(hashes), word_hash);
+        if (res != std::end(hashes))
+        {
+            std::cout << word_hash << " -- " << word << "\n"; // output
+            hashes.erase(res);
+        }
+    }
+
+    for (auto&& hash : hashes)
+    {
+        std::cout << "Could not crack " << hash << "\n";
+    }
+}
+
+void hash_crack_sha512(std::ifstream& hash_file, std::ifstream& word_file)
+{
+    std::vector<Hash<512>> hashes = read_hash_file<512>(hash_file);
+    hash_file.close();
+
+    std::vector<std::string> words = read_word_file(word_file, 100);
+    Hash<512> word_hash;
+    for (std::string word : words)
+    {
+        word_hash = sha512(word.c_str());
+        auto res = std::find(std::begin(hashes), std::end(hashes), word_hash);
+        if (res != std::end(hashes))
+        {
+            std::cout << word_hash << " -- " << word << "\n"; // output
+            hashes.erase(res);
+        }
+    }
+
+    for (auto&& hash : hashes)
+    {
+        std::cout << "Could not crack " << hash << "\n";
+    }
+}
+
+void hash_crack_sha384(std::ifstream& hash_file, std::ifstream& word_file)
+{
+    std::vector<Hash<384>> hashes = read_hash_file<384>(hash_file);
+    hash_file.close();
+
+    std::vector<std::string> words = read_word_file(word_file, 100);
+    Hash<384> word_hash;
+    for (std::string word : words)
+    {
+        word_hash = sha384(word.c_str());
+        auto res = std::find(std::begin(hashes), std::end(hashes), word_hash);
+        if (res != std::end(hashes))
+        {
+            std::cout << word_hash << " -- " << word << "\n"; // output
+            hashes.erase(res);
+        }
+    }
+
+    for (auto&& hash : hashes)
+    {
+        std::cout << "Could not crack " << hash << "\n";
+    }
+}

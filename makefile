@@ -1,8 +1,8 @@
 CC = g++
-FLAGS = -std=c++17 -march=native -Wall -pedantic -O1 -I$(INCLUDE)
+FLAGS = -std=c++17 -march=native -Wall -pedantic -O3 -I$(INCLUDE)
 
 OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o $(BUILD)SHA512.o $(BUILD)SHA384.o
-SHAKE_OBJECTS = $(OBJECTS) $(BUILD)ArgumentParser.o
+SHAKE_OBJECTS = $(OBJECTS) $(BUILD)ArgumentParser.o $(BUILD)Process.o
 ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm $(BUILD)SHA512.asm $(BUILD)SHA384.asm
 
 INCLUDE = include/
@@ -54,6 +54,8 @@ $(BUILD)SHA384.o: $(SRC)SHA384.cpp $(INCLUDE)hash/SHA384.hpp
 	$(CC) $(FLAGS) -c $< -o $@
 
 $(BUILD)ArgumentParser.o: $(SRC)shashaker/ArgumentParser.cpp $(INCLUDE)shashaker/ArgumentParser.hpp
+	$(CC) $(FLAGS) -c $< -o $@
+$(BUILD)Process.o: $(SRC)shashaker/Process.cpp $(INCLUDE)shashaker/Process.hpp
 	$(CC) $(FLAGS) -c $< -o $@
 
 $(BUILD)SHA256.asm: $(SRC)SHA256.cpp $(INCLUDE)hash/SHA256.hpp

@@ -1,10 +1,12 @@
 #include <iostream>
 #include <fstream>
 #include <regex>
+#include <vector>
 
 #include "Hash.hpp"
 #include "hash/SHA.hpp"
 #include "shashaker/ArgumentParser.hpp"
+#include "shashaker/Process.hpp"
 
 using namespace std;
 
@@ -120,12 +122,53 @@ int main(int argc, const char** argv)
     std::cout << "HASH TYPE = SHA" << sha_num << "\n";
     std::cout << "THREADS = " << thread_count << "\n";
 
+    std::ifstream wordlist_file{ wordlist };
+    std::ifstream hashlist_file{ hashlist };
+
+    if (wordlist_file.bad())
+    {
+        std::cout << "Word list file does not exist.\n";
+        return 1;
+    }
+
+    if (hashlist_file.bad())
+    {
+        std::cout << "Hash file does not exist.\n";
+        return 1;
+    }
+
+    switch (sha_num)
+    {
+/*         case 224: 
+        {
+            hash_crack_sha224(hashlist_file, wordlist_file);
+            break;
+        } */
+        case 256:
+        {
+            hash_crack_sha256(hashlist_file, wordlist_file);
+            break;
+        }
+/*         case 384:
+        {
+            hash_crack_sha384(hashlist_file, wordlist_file);
+            break;
+        }
+        case 512:
+        {
+            hash_crack_sha512(hashlist_file, wordlist_file);
+            break;
+        } */
+        default:
+        {
+            std::cout << "Unexpected. This branch should never be taken. Odd.\n";
+        }
+    }
+
 /*
-    ifstream wordlist;
-    wordlist.open(argv[2]);
-    if (wordlist.is_open()){   //checking whether the file is open
-      string s;
-       switch(stoi(argv[3])){
+    if (wordlist_file.is_open()){   //checking whether the file is open
+        string s;
+        switch(stoi(argv[3])){
         case 224: 
           while(getline(wordlist, s)){ //read data from file object and put it into string.
         if(sha224(s.c_str()) == 0xdeedb07a5cb5344f8c542e1aee5671c721727c0190251c1e5786339c_hash){
@@ -166,4 +209,5 @@ int main(int argc, const char** argv)
       wordlist.close(); //close the file object.
    }
 */
+
 }

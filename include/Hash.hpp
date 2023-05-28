@@ -41,73 +41,37 @@ struct Hash
 };
 
 template<std::size_t N>
-bool operator<(Hash<N>& a, Hash<N>& b)
+bool operator<(Hash<N> a, Hash<N> b)
 {
     return std::memcmp(a.data, b.data, Hash<N>::Bytes) < 0;
 }
 
 template<std::size_t N>
-bool operator>(Hash<N>& a, Hash<N>& b)
+bool operator>(Hash<N> a, Hash<N> b)
 {
     return std::memcmp(a.data, b.data, Hash<N>::Bytes) > 0;
 }
 
 template<std::size_t N>
-bool operator==(Hash<N>& a, Hash<N>& b)
+bool operator==(Hash<N> a, Hash<N> b)
 {
     return std::memcmp(a.data, b.data, Hash<N>::Bytes) == 0;
 }
 
 template<std::size_t N>
-bool operator!=(Hash<N>& a, Hash<N>& b)
+bool operator!=(Hash<N> a, Hash<N> b)
 {
     return !(a == b);
 }
 
 template<std::size_t N>
-bool operator<=(Hash<N>& a, Hash<N>& b)
+bool operator<=(Hash<N> a, Hash<N> b)
 {
     return !(a > b);
 }
 
 template<std::size_t N>
-bool operator>=(Hash<N>& a, Hash<N>& b)
-{
-    return !(a < b);
-}
-
-template<std::size_t N>
-bool operator<(Hash<N>&& a, Hash<N>&& b)
-{
-    return std::memcmp(a.data, b.data, Hash<N>::Bytes) < 0;
-}
-
-template<std::size_t N>
-bool operator>(Hash<N>&& a, Hash<N>&& b)
-{
-    return std::memcmp(a.data, b.data, Hash<N>::Bytes) > 0;
-}
-
-template<std::size_t N>
-bool operator==(Hash<N>&& a, Hash<N>&& b)
-{
-    return std::memcmp(a.data, b.data, Hash<N>::Bytes) == 0;
-}
-
-template<std::size_t N>
-bool operator!=(Hash<N>&& a, Hash<N>&& b)
-{
-    return !(a == b);
-}
-
-template<std::size_t N>
-bool operator<=(Hash<N>&& a, Hash<N>&& b)
-{
-    return !(a > b);
-}
-
-template<std::size_t N>
-bool operator>=(Hash<N>&& a, Hash<N>&& b)
+bool operator>=(Hash<N> a, Hash<N> b)
 {
     return !(a < b);
 }

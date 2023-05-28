@@ -7,7 +7,7 @@
 #include <tuple>
 
 template<typename TimeUnit, typename Func, typename... Args>
-std::int64_t __attribute__((optimize("O0"))) chrono_time_it(Func&& func, Args&&... args)
+std::int64_t chrono_time_it(Func&& func, Args&&... args)
 {
     using namespace std::chrono;
     auto t0 = high_resolution_clock::now();
@@ -18,7 +18,7 @@ std::int64_t __attribute__((optimize("O0"))) chrono_time_it(Func&& func, Args&&.
 }
 
 template<typename Func, typename... Args>
-std::tuple<long, long, long> __attribute__((optimize("O0"))) high_res_time_it(Func&& func, Args&&... args)
+std::tuple<long, long, long> high_res_time_it(Func&& func, Args&&... args)
 {
     constexpr std::uint64_t nano_in_sec = 1e9;
 

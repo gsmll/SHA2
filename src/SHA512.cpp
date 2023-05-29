@@ -15,7 +15,8 @@ namespace _details
         constexpr std::size_t BLOCK_BYTE_SIZE = 1024 / 8;
 
         std::size_t strsize = std::strlen(input);
-        *blk_total = (strsize + 8 + 1) / 64 + ( (strsize + 8 + 1) % 64 ? 1 : 0 );
+        *blk_total = (strsize + 16 + 1) / 128 + ( (strsize + 16 + 1) % 128 ? 1 : 0 );
+       std:: cout << blk_total << "\n";
         std::uint8_t* blks = new std::uint8_t[BLOCK_BYTE_SIZE * *blk_total]{ }; // paren important        
         std::memcpy(blks, input, strsize);
         blks[strsize] |= 1 << 7;
@@ -64,7 +65,7 @@ namespace _details
            0x510e527fade682d1, 0x9b05688c2b3e6c1f, 0x1f83d9abfb41bd6b, 0x5be0cd19137e2179 };
            std::size_t blk_count;
         std::uint8_t* blks = preprocess_sha512(input, &blk_count);
-        
+        std::cout << blk_count<< "\n";
         for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx)
         {
             word temp0_, temp1_;
@@ -74,7 +75,9 @@ namespace _details
             for (std::size_t i = 0; i < 16; ++i) 
             {
                 std::memcpy(&temp0_, blks + chunk_idx * bytes_per_block + i * sizeof(word), sizeof(word));
+               
                 msg_schedule_arr[i] = to_big_endian(temp0_);
+              
             }
             for (std::size_t i = 16; i < rounds_per_chunk; ++i)
             {

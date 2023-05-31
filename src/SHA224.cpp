@@ -11,7 +11,7 @@ namespace _details
         std::uint8_t* blks = new std::uint8_t[BLOCK_BYTE_SIZE * *blk_total]{ }; // paren important        
         std::memcpy(blks, input, strsize);
         blks[strsize] |= 1 << 7;
-        std::uint64_t strbitsize = to_big_endian(8ul * strsize);
+        std::uint64_t strbitsize = to_big_endian(static_cast<std::uint64_t>(8ul * strsize));
         std::memcpy(blks + *blk_total * BLOCK_BYTE_SIZE - sizeof(std::uint64_t), &strbitsize, sizeof(std::uint64_t));
 
 #ifdef DEBUG

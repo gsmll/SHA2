@@ -48,6 +48,18 @@ INLINE auto rotr(std::uint32_t val, int d)
 }
 #endif
 
+INLINE auto rotl(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val << d) | (val >> (-d & 63));
+}
+
+INLINE auto rotr(std::uint64_t val, int d)
+{
+    d &= 63;
+    return (val >> d) | (val << (-d & 63));
+}
+
 #else // ARM Arch
 
 INLINE auto rotl(std::uint32_t val, int d)
@@ -76,18 +88,6 @@ INLINE auto rotr(std::uint64_t val, int d)
 #endif
 
 // Not architecture specific
-
-INLINE auto rotl(std::uint64_t val, int d)
-{
-    d &= 63;
-    return (val << d) | (val >> (-d & 63));
-}
-
-INLINE auto rotr(std::uint64_t val, int d)
-{
-    d &= 63;
-    return (val >> d) | (val << (-d & 63));
-}
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 

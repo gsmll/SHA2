@@ -12,6 +12,8 @@ TOOL = tool/
 
 all: sha shaker
 
+ext: 
+	@gcc -dM -march=native -E - < /dev/null | grep -o -E "SHA|AVX2"
 test: $(BUILD)main
 	@$(BUILD)main
 sha: sha256 sha224 sha512 sha384

@@ -59,8 +59,12 @@ void Queue<T>::wait_and_pop(T& value)
     data_cond.wait(lk, [this](){ return !data.empty() || terminate_waits; });
     if (!terminate_waits)
     {
-       value = std::move(data.front());
+        value = std::move(data.front());
         data.pop(); 
+    }
+    else
+    {
+        value = T{};
     }
 }
 

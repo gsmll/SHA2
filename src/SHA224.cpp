@@ -2,6 +2,33 @@
 
 namespace _details 
 {
+    [[nodiscard]] std::uint8_t* preprocess_sha224(const char* input, std::size_t* blk_total)
+    {
+        constexpr std::size_t BLOCK_BYTE_SIZE = 512 / 8;
+
+        std::size_t strsize = std::strlen(input);
+        *blk_total = (strsize + 8 + 1) / 64 + ( (strsize + 8 + 1) % 64 ? 1 : 0 );
+        std::uint8_t* blks = new std::uint8_t[BLOCK_BYTE_SIZE * *blk_total]{ }; // paren important        
+        std::memcpy(blks, input, strsize);
+        blks[strsize] |= 1 << 7;
+        std::uint64_t strbitsize = to_big_endian(8ul * strsize);
+        std::memcpy(blks + *blk_total * BLOCK_BYTE_SIZE - sizeof(std::uint64_t), &strbitsize, sizeof(std::uint64_t));
+
+#ifdef DEBUG
+        std::cout << "PADDED MESSAGE\n" << std::hex << std::setfill('0');
+        for (std::size_t i = 0; i < *blk_total * 512 / 32; ++i)
+        {
+            uint32_t val;
+            std::memcpy(&val, blks + i * 4, 4);
+            // std::cout << std::bitset<32>{ val } << "\n";
+
+            std::cout << to_big_endian(val) << "\n";
+        }
+        std::cout << "\n" << std::dec << std::setfill(' ');
+#endif
+
+        return blks;
+    }
 
     [[nodiscard]] Hash<224> general_sha224(const char* input)
     {
@@ -24,7 +51,7 @@ namespace _details
         word hash_data[8]{ 0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4 };
 
         std::size_t blk_count;
-        std::uint8_t* blks = preprocess_sha256(input, &blk_count);
+        std::uint8_t* blks = preprocess_sha224(input, &blk_count);
         
         for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx)
         {
@@ -154,7 +181,7 @@ namespace _details
         word hash_data[8]{ 0xc1059ed8, 0x367cd507, 0x3070dd17, 0xf70e5939, 0xffc00b31, 0x68581511, 0x64f98fa7, 0xbefa4fa4 };
 
         std::size_t blk_count;
-        std::uint8_t* blks = preprocess_sha256(input, &blk_count);
+        std::uint8_t* blks = preprocess_sha224(input, &blk_count);
 
         for (std::size_t chunk_idx = 0; chunk_idx < blk_count; ++chunk_idx)
         {
@@ -445,7 +472,7 @@ for (std::size_t i = 0; i < 4; ++i, --temp_hash)                                
         constexpr std::size_t bytes_per_block = bits_per_block / 8;
 
         std::size_t blk_count;
-        std::uint8_t* blks = preprocess_sha256(input, &blk_count);
+        std::uint8_t* blks = preprocess_sha224(input, &blk_count);
 
         __m128i hash_CDGH = _mm_set_epi32(0x3070dd17, 0xf70e5939, 0x64f98fa7, 0xbefa4fa4);
         __m128i hash_ABEF = _mm_set_epi32(0xc1059ed8, 0x367cd507, 0xffc00b31, 0x68581511); 

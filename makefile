@@ -8,18 +8,33 @@ ASM = $(BUILD)SHA256.asm $(BUILD)SHA224.asm $(BUILD)SHA512.asm $(BUILD)SHA384.as
 INCLUDE = include/
 BUILD = build/
 SRC = src/
+TOOL = tool/
 
-main: $(BUILD)main
+test: $(BUILD)main
 	$(BUILD)main
-
+sha: sha256 sha224 sha512 sha384
 shaker: $(BUILD)Shaker
 
+sha256: $(TOOL)sha256
+sha224: $(TOOL)sha224
+sha512: $(TOOL)sha512
+sha384: $(TOOL)sha384
+
+$(TOOL)sha256: $(TOOL) $(BUILD) $(BUILD)SHA256.o
+	$(CC) $(SRC)tools/sha256.cpp $(BUILD)SHA256.o $(FLAGS) -o $@
+$(TOOL)sha224: $(TOOL) $(BUILD) $(BUILD)SHA224.o
+	$(CC) $(SRC)tools/sha224.cpp $(BUILD)SHA224.o $(FLAGS) -o $@
+$(TOOL)sha512: $(TOOL) $(BUILD) $(BUILD)SHA512.o
+	$(CC) $(SRC)tools/sha512.cpp $(BUILD)SHA512.o $(FLAGS) -o $@
+$(TOOL)sha384: $(TOOL) $(BUILD) $(BUILD)SHA384.o
+	$(CC) $(SRC)tools/sha384.cpp $(BUILD)SHA384.o $(FLAGS) -o $@
+
+# Used for development. Do not used. you likely dont have the libraries or tools to do so
 profile: $(BUILD)profile
 	$(BUILD)profile
 time: $(BUILD)time
 	$(BUILD)time
 asm: $(ASM)
-
 perf: $(BUILD)time
 	perf record -F 10000 $(BUILD)time
 	perf report
@@ -68,6 +83,9 @@ $(BUILD)SHA384.asm: $(SRC)SHA384.cpp $(INCLUDE)hash/SHA384.hpp
 
 $(BUILD):
 	mkdir $(BUILD)
+$(TOOL):
+	mkdir $(TOOL)
 .PHONY: clean
 clean:
 	rm -rfv $(BUILD)
+	rm -rfv $(TOOL)

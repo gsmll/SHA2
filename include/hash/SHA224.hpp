@@ -3,10 +3,11 @@
 
 #include "Utility.hpp"
 #include "Hash.hpp"
-#include "SHA256.hpp"
 
 namespace _details
 {
+    [[nodiscard]] std::uint8_t* preprocess_sha224(const char* input, std::size_t* blk_total);
+
     [[nodiscard]] Hash<224> general_sha224(const char* input);
 
 #ifdef __AVX2__

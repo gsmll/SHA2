@@ -50,6 +50,10 @@ Implemented minor quality of life command line argument options in [ArgumentPars
 
 Implemented multithreaded hash cracker tool. Need to correct some issues such as data races with printing to console, but that is for another time.
 
+### 5/30/2023
+
+Started writing up presentation in [PRESENTATION.md](PRESENTATION.md)
+
 ## GROUP MEMBER 2
 
 ### date x

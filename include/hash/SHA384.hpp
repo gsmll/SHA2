@@ -9,11 +9,6 @@ namespace _details
     [[nodiscard]] std::uint8_t* preprocess_sha384(const char* input, std::size_t* blk_total);
 
     [[nodiscard]] Hash<384> general_sha384(const char* input);
-
-#ifdef __AVX2__
-    [[nodiscard]] Hash<384> simd_sha384(const char* input);
-#endif
-
 }
 
 [[nodiscard]] Hash<384> sha384(const char* input);

@@ -3,8 +3,7 @@
 #include <benchmark/benchmark.h>
 
 #include "Hash.hpp"
-#include "hash/SHA256.hpp"
-#include "hash/SHA224.hpp"
+#include "hash/SHA.hpp"
 
 #include "ProfileUtil.hpp"
 
@@ -127,7 +126,7 @@ void BM_VECTORIZED_SHA256(benchmark::State& state)
     state.SetBytesProcessed(state.iterations() * 64 * total_elements * sizeof(rand_t));
 }
 
-/*
+
 void BM_VECTORIZED_SHA224(benchmark::State& state)
 {
     srand(1);
@@ -154,7 +153,7 @@ void BM_VECTORIZED_SHA224(benchmark::State& state)
     state.SetItemsProcessed(state.iterations() * 64);
     state.SetBytesProcessed(state.iterations() * 64 * total_elements * sizeof(rand_t));
 }
-*/
+
 #endif
 
 #ifdef __SHA__
@@ -240,7 +239,61 @@ void BM_SHA224(benchmark::State& state)
     state.SetBytesProcessed(state.iterations() * 64 * total_elements * sizeof(rand_t));
 }
 
-BENCHMARK(BM_SHA256)->Arg(TARGET_BYTES);
+void BM_NONVECTORIZED_SHA512(benchmark::State& state)
+{
+    srand(1);
+    const unsigned int N = state.range(0);
+    const unsigned int total_elements = N / sizeof(rand_t);
+
+    rand_t* rand_buffer = new rand_t[total_elements];
+    char* msg = new char[total_elements * sizeof(rand_t)];
+    
+    for (std::size_t i = 0; i < total_elements; ++i) rand_buffer[i] = rand();
+    std::memcpy(msg, rand_buffer, total_elements * sizeof(rand_t));
+
+    Hash<512> hash;
+    for (auto _ : state)
+    {
+        REPEAT64(hash = _details::general_sha512(msg);)   
+        benchmark::DoNotOptimize(hash);
+        benchmark::ClobberMemory();
+    }
+
+    delete[] rand_buffer;
+    delete[] msg;
+
+    state.SetItemsProcessed(state.iterations() * 64);
+    state.SetBytesProcessed(state.iterations() * 64 * total_elements * sizeof(rand_t));
+}
+
+void BM_NONVECTORIZED_SHA384(benchmark::State& state)
+{
+    srand(1);
+    const unsigned int N = state.range(0);
+    const unsigned int total_elements = N / sizeof(rand_t);
+
+    rand_t* rand_buffer = new rand_t[total_elements];
+    char* msg = new char[total_elements * sizeof(rand_t)];
+    
+    for (std::size_t i = 0; i < total_elements; ++i) rand_buffer[i] = rand();
+    std::memcpy(msg, rand_buffer, total_elements * sizeof(rand_t));
+
+    Hash<384> hash;
+    for (auto _ : state)
+    {
+        REPEAT64(hash = _details::general_sha384(msg);)   
+        benchmark::DoNotOptimize(hash);
+        benchmark::ClobberMemory();
+    }
+
+    delete[] rand_buffer;
+    delete[] msg;
+
+    state.SetItemsProcessed(state.iterations() * 64);
+    state.SetBytesProcessed(state.iterations() * 64 * total_elements * sizeof(rand_t));
+}
+
+// BENCHMARK(BM_SHA256)->Arg(TARGET_BYTES);
 BENCHMARK(BM_NONVECTORIZED_SHA256)->Arg(TARGET_BYTES);
 #ifdef __AVX2__
 BENCHMARK(BM_VECTORIZED_SHA256)->Arg(TARGET_BYTES);
@@ -249,10 +302,17 @@ BENCHMARK(BM_VECTORIZED_SHA256)->Arg(TARGET_BYTES);
 BENCHMARK(BM_INTRINSIC_SHA256)->Arg(TARGET_BYTES);
 #endif
 
-BENCHMARK(BM_SHA224)->Arg(TARGET_BYTES);
+// BENCHMARK(BM_SHA224)->Arg(TARGET_BYTES);
 BENCHMARK(BM_NONVECTORIZED_SHA224)->Arg(TARGET_BYTES);
+#ifdef __AVX2__
+BENCHMARK(BM_VECTORIZED_SHA224)->Arg(TARGET_BYTES);
+#endif
 #ifdef __SHA__
 BENCHMARK(BM_INTRINSIC_SHA224)->Arg(TARGET_BYTES);
 #endif
+
+BENCHMARK(BM_NONVECTORIZED_SHA512)->Arg(TARGET_BYTES);
+
+BENCHMARK(BM_NONVECTORIZED_SHA384)->Arg(TARGET_BYTES);
 
 BENCHMARK_MAIN();

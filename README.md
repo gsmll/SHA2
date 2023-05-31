@@ -36,13 +36,19 @@ To use this project first clone the repo using:
 git clone git@github.com:Stuycs-K/final-project-4-jiangj-smallg.git
 ```
 
-### **Non-Mac Users**
+### **Non-Mac Users With WSL2**
+
+If GNU `g++` is not installed, run the following:
+
+```bash
+sudo apt install g++
+```
 
 ***Note**: The SHA256/224 algorithms make use of CPU instruction extensions to be more efficient. The lab machines do not support the fastest version of SHA256/224, but it does support one faster than the standard implementation.*
 
 To determine CPU compatibility, run the following commmand:
 
-```
+```bash
 make ext
 ```
 
@@ -52,7 +58,7 @@ If `SHA` is outputted, you will have the fastest implementation of SHA256/224 on
 
 Run the following command to test if the algorithms are working correctly:
 
-```
+```bash
 make test
 ```
 
@@ -60,7 +66,7 @@ If any of the tests fail, use the lab machines instead to continue.
 
 Run one of the following:
 
-```
+```bash
 make
 make all
 ```
@@ -75,13 +81,13 @@ If you can run `g++` in your terminal, make sure `g++` uses GNU's `g++` and not 
 
 To check, do the following:
 
-```
+```bash
 g++ --version
 ```
 
 If `clang` appears, you will have to install GNU `g++` on your preferred method such as `homebrew`. 
 
-``` 
+```bash
 brew install gcc
 ```
 
@@ -90,7 +96,7 @@ Once installed, do one the following:
 1. Go into the makefile and change the `CC` variable to the GNU `g++` program you have just installed. 
 2. Change the alias of `g++` in the mac to refer to GNU instead of `clang` by running the following command: 
 
-```
+```bash
 # replace g++-13 with the appropriate g++ version
 sudo ln -s $(which g++-13) /usr/local/bin/g++
 ```

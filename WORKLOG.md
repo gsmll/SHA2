@@ -54,6 +54,14 @@ Implemented multithreaded hash cracker tool. Need to correct some issues such as
 
 Started writing up presentation in [PRESENTATION.md](PRESENTATION.md)
 
+### 5/31/2023
+
+Finished presentation in [PRESENTATION.md](PRESENTATION.md)
+
+### 6/1/2023
+
+Revised and updated [README.md](README.md) and [HOMEWORK.md](HOMEWORK.md). Added `gpg` files for backup incase SSH server does not work.
+
 ## GROUP MEMBER 2
 
 ### date x

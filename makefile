@@ -1,5 +1,5 @@
 CC = g++
-FLAGS = -std=c++17 -march=native -Wall -pedantic -O3 -I$(INCLUDE)
+FLAGS = -std=c++17 -march=native -lpthread -Wall -pedantic -O3 -I$(INCLUDE)
 
 OBJECTS=$(BUILD)SHA256.o $(BUILD)SHA224.o $(BUILD)SHA512.o $(BUILD)SHA384.o
 SHAKE_OBJECTS = $(OBJECTS) $(BUILD)ArgumentParser.o $(BUILD)Process.o
@@ -49,7 +49,7 @@ perf: $(BUILD)time
 $(BUILD)main: $(BUILD)  $(OBJECTS) $(BUILD)main.o
 	@$(CC) $(BUILD)main.o $(OBJECTS) $(FLAGS) -o $(BUILD)main
 $(TOOL)Shaker: $(TOOL) $(BUILD)  $(SHAKE_OBJECTS) $(BUILD)Shaker.o
-	@$(CC) $(FLAGS) $(BUILD)Shaker.o $(SHAKE_OBJECTS) -o $(TOOL)Shaker
+	@$(CC) $(BUILD)Shaker.o $(SHAKE_OBJECTS) $(FLAGS) -o $(TOOL)Shaker
 	@echo GENERATED Shaker TOOL IN $(TOOL) DIRECTORY
 $(BUILD)profile: $(BUILD) $(OBJECTS) $(BUILD)profile.o
 	@$(CC) $(BUILD)profile.o $(OBJECTS) -std=c++17 -O3 -Iinclude/ -Llib -lbenchmark -lpthread -o $(BUILD)profile 

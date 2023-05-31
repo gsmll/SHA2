@@ -13,8 +13,8 @@ using namespace std;
 
 constexpr int DEFAULT_THREAD_COUNT = 1;
 
-// ./Shaker --format sha512 --wordlist rockyou.txt --hash hash.txt --thread 4
-// ./Shaker -f sha256 -w rockyou.txt -t 20 -h hash.txt
+// ./Shaker --format sha512 --wordlist rockyou.txt --hash hash.txt
+// ./Shaker -f sha256 -w rockyou.txt -h hash.txt
 int main(int argc, const char** argv)
 {
     ArgumentParser option_parser{ argc, argv };

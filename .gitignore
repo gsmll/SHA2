@@ -58,5 +58,6 @@ perf.data
 perf.data.old
 
 lib/
+tool/
 include/benchmark/
 *.txt

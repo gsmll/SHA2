@@ -138,7 +138,7 @@ This process continues for every chunk. Finally, the final hash values are passe
 
 ## **Summary**
 
-![Summary Flowchart of SHA-2 Algorithm](assets/Flowchart.png)
+![Summary Flowchart of SHA-2 Algorithm](assets/SHA2Flowchart.png)
 
 ## **Additional Resources**
 

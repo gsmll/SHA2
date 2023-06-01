@@ -4,9 +4,9 @@
 ### Please use your hash cracking skills to retrieve their super-secret flags!  
 
 
-#### Once you obtain 8 flags, submit them to google classroom
+##### Once you obtain 8 flags, submit them to google classroom
 
-#### The server is @ 150.136.212.179 and the students are named
+##### The server is @ 150.136.212.179 and the students are named
 
 - James
 - Logan

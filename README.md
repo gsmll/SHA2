@@ -67,7 +67,7 @@ sudo ln -s $(which g++-13) /usr/local/bin/g++
 brew install gcc
 ```
 
-##### ** if you still want to fiddle outside of our assignment, you can use the sha*** executables to create hashes **
+#####  if you still want to fiddle outside of our assignment, you can use the sha*** executables to create hashes 
 
 <br></br><br>
 

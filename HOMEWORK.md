@@ -39,7 +39,7 @@
   
   to create the word list you can use this command:
   ```
-  echo {\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{0..9}{0..9} > wordlist.txt
+  printf "%s\n" {\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{0..9}{0..9} > wordlist.txt
   ```
  
  

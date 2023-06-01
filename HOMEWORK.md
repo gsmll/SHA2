@@ -50,10 +50,9 @@ b56726a196a0688213b9eae8dff46c4a372fd180826c6c84a291bdb8
   - - sha224
   - - sha384 
   
-  to create the word list you can use this command:
-  ```
-  printf "%s\n" {\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{0..9}{0..9} > wordlist.txt
-  ```
+  to create the word list you can use your programming language of choice, or a bash command.
+  some helpful ones are echo, followed by a sed to get rid of spaces
+  and printf 
  
  
   

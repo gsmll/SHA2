@@ -4,13 +4,13 @@
 </font>  
   <p align="center">
     Sha-2 Encryption in a Nutshell
-    <br>
+    <br> </br>
     <a href="https://tryhackme.com/p/Jeffrey.J">
     <img src="https://i.imgur.com/dODfC6z.gif"  alt="GSmall" width=72 height=72>
     </a>
     <a href="https://tryhackme.com/p/GSmall">
     <img src="https://tryhackme-images.s3.amazonaws.com/user-avatars/c31ea6bfbcc1fa28101976dced850e48.png"  alt="GSmall" width=72 height=72>
-    <br>
+    <br> 
     </a>
       <a href="https://tryhackme.com/p/Jeffrey.J">
         Jeffrey Jiang </a>
@@ -18,25 +18,54 @@
           | Gabriel Small</a>
     </a>
   </p>
-</p>
+</p>  
 
-<details>
 
-<summary > <h1>  Table of Contents </h1> </summary>
 
->- [Project Description](#project-description)
->- [Homework](HOMEWORK.md)
->- [Presentation](PRESENTATION.md)
 
-</details>
 
-## Project Description
+# Project Description
 
-### This Is an Overview of our project
 
-<details>
-<summary>Click to expand</summary>
-For this project we have created multiple sha-2 hashes ranging from 224-512. 
-In class we will give a lesson on sha-2, and challenge them to crack that hash.
 
-</details>  
+ ### This project covers string hashing and encryption using the SHA-2 algorithm and its subdivisions.  
+
+<br> 
+
+### We recreated the SHA 224, 256, 384, and 512 algorithms in C++, along with a hashcat-like hash cracker to test these algorithms against a word list, such as rockyou. 
+
+
+<br><br>
+</br>
+
+# Access and Usage
+
+
+
+### To use this project first clone the repo @
+```
+git clone git@github.com:Stuycs-K/final-project-4-jiangj-smallg.git
+```
+### and run the make file, which should in turn create the Shaker binary, which will be in the tools directory. This created binary should be all you need for the homework associated with this project. 
+<br>
+
+### **Mac Users, please use lab machines. If really against it, read on**
+<br>
+
+### if on mac, make sure to use g++ and not clang, as we use g++ specific instructions. Once installing gcc or g++ on your machine, using preferred methods such as homebrew, either change the makefile to use **g++-13** instad of **g++** or use the command:
+<br>
+
+```
+sudo ln -s $(which g++-13) /usr/local/bin/g++
+```
+
+### to overwrite the default which aliases g++ to clang.
+<br></br><br>
+
+# Links
+
+## [Homework](HOMEWORK.md)
+## [Presentation](PRESENTATION.md)
+
+
+

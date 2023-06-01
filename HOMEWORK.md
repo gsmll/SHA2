@@ -30,7 +30,10 @@
   
   Use the sha shaker hash cracker, along with the list of hashes to crack the passwords of these 8 Accounts
   
-  to create the word list 
+  to create the word list you can use this command:
+  ```
+  echo {\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{0..9}{0..9} > wordlist.txt
+  ```
   </details
   
 

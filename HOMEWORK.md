@@ -17,3 +17,16 @@
 - Drew
 - Mike
 
+##### All of their passwords follow [a-zA-Z]{3}[0-9]{2} format, according to class policy!
+
+##### They all use varying SHA-2 algos, find out which!
+
+<details>
+  <summary> Press For Help </summary>
+  
+  Use the sha shaker hash cracker, along with the list of hashes to crack the passwords of these 8 Accounts
+  
+  to create the word list 
+  </details
+  
+

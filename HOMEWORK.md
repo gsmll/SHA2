@@ -19,6 +19,10 @@
 
 ##### All of their passwords follow [a-zA-Z]{3}[0-9]{2} format, according to class policy!
 
+##### Ms. Frizzle has the hashes though! They are:
+
+-
+
 ##### They all use varying SHA-2 algos, find out which!
 
 <details>

@@ -37,6 +37,16 @@
   
   Use the sha shaker hash cracker, along with the list of hashes to crack the passwords of these 8 Accounts
   
+  
+  The Sha shaker has 3 flags, 
+  - h for hash list ( can do multiple at once, seperated by newline)
+  - w for word list 
+  - f for form uses
+  - - sha512
+  - - sha256
+  - - sha224
+  - - sha384 
+  
   to create the word list you can use this command:
   ```
   printf "%s\n" {\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{\ ,{A..Z},{a..z}}{0..9}{0..9} > wordlist.txt

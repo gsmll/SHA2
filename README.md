@@ -59,7 +59,7 @@ git clone git@github.com:Stuycs-K/final-project-4-jiangj-smallg.git
 sudo ln -s $(which g++-13) /usr/local/bin/g++
 ```
 
-### to overwrite the default which aliases g++ to clang.
+#### to overwrite the default which aliases g++ to clang.
 <br></br><br>
 
 # Links

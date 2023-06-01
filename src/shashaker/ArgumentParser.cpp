@@ -1,5 +1,5 @@
 #include "shashaker/ArgumentParser.hpp"
-
+#include <cstring>
 #include <iostream>
 
 ArgumentParser::ArgumentParser(int argc, const char** argv) : _argc{ argc }, _argv{ argv } {}

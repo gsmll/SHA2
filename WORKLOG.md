@@ -62,12 +62,52 @@ Finished presentation in [PRESENTATION.md](PRESENTATION.md)
 
 Revised and updated [README.md](README.md) and [HOMEWORK.md](HOMEWORK.md). Added `gpg` files for backup incase SSH server does not work.
 
-## GROUP MEMBER 2
+## Gabriel Small
 
-### date x
+### 5/18/23
 
-info
+Started the README file and setup the SHA512 hpp file. Locally started the SHA512 preprocess code. 
 
-### date y
+### 5/19/23
 
-info
+Researched Sha algorithm and looked at source codes to understand how the preprocess worked
+
+### 5/21/23 
+
+Continued working on the Sha-512 preprocesss, stopped by hardware issues on an m1 chip.
+
+### 5/22/23 
+
+Finished Sha512 preprocess function and started to port the code from Jeffrey's shas to 512.
+
+### 5/23/23
+
+Completed Sha512 by following the psuedocode and Jeffrey's 256 implementation and merged with the main branch. 
+
+### 5/24/23
+
+Sha 512 was broken, so I fixed it
+
+### 5/25/23
+
+Sha 512 is broken again, so I fixed it and also completed the SHA384 code. Started the shashaker implementation with a very basic file reader and 256 hash checker. 
+
+### 5/26/23
+
+Updated the Shaker more, adding modes for each hash. 
+
+### 5/28/23
+
+Set up a server box to run the homework against. 
+
+### 5/29/23
+
+Sha512 was broken with very large text, so I fixed the error in preprocess with Jeffrey's guidance. 
+
+### 5/30/23
+
+Set up 8 restricted accounts on the server box, each ssh-able for people to log into and get the flag.
+
+### 5/31/23
+
+Wrote more for README.md and wrote HOMEWORK.md

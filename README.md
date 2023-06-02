@@ -71,7 +71,7 @@ make
 make all
 ```
 
-This will create programs found in the `tool\` directory. There will be the `shaXXX` programs and the `Shaker` program. If there is any compilation errors. Use the lab machines.
+This will create programs found in the `tool` directory. There will be the `shaXXX` programs and the `Shaker` program. If there is any compilation errors. Use the lab machines.
 
 ### **Mac Users**
 

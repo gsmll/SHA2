@@ -63,6 +63,8 @@ If the server is not working, there are password encrypted `gpg` files in the `h
   to create the word list you can use your programming language of choice, or a bash command.
   some helpful ones are echo, followed by a sed to get rid of spaces
   and printf. 
+  
+  Also, use ssh to access the accounts.
 </details>
   
 

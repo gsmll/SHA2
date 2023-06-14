@@ -10,12 +10,12 @@ The server is @ `150.136.212.179` and the students are named
 
 - James
 - Logan
-- Alex
-- Noel
-- Walter
 - Isaac
-- Drew
 - Mike
+- Walter
+- Noel
+- Drew
+- Alex
 
 All of their passwords follow `[a-zA-Z]{3}[0-9]{2}` format, according to class policy!
 

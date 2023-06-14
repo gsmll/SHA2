@@ -166,14 +166,14 @@ int main(int argc, const char** argv)
         {
             /* if (thread_count > 1) multithread_sha384_cracker(wordlist_file, hashlist_file, thread_count);
             else  */
-            hash_crack_sha512(hashlist_file, wordlist_file);
+            hash_crack_sha384(hashlist_file, wordlist_file);
             break;
         }
         case 512:
         {
             /* if (thread_count > 1) multithread_sha512_cracker(wordlist_file, hashlist_file, thread_count);
             else  */
-            hash_crack_sha384(hashlist_file, wordlist_file);
+            hash_crack_sha512(hashlist_file, wordlist_file);
             break;
         }
         default:

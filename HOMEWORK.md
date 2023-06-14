@@ -11,9 +11,9 @@ The server is @ `150.136.212.179` and the students are named
 - James
 - Logan
 - Isaac
-- Mike
+- Mike -- use gpg
 - Walter
-- Noel
+- Noel -- use gpg
 - Drew
 - Alex
 
